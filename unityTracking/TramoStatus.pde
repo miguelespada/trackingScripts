@@ -58,7 +58,7 @@ class TramoStatus {
         
       running = true;
       loopTrack.reset();
-      loopTrack.add(t.getStart(), car.pTime);
+      loopTrack.add(t.getStart(), car.pTime, car.speed, getAvgSpeedOfLastPeriod(car.speed));
       startTime = car.pTime;
     }
     pdStart = dStart;
@@ -85,21 +85,16 @@ class TramoStatus {
     }
     else{
       fresh = true;
-      updateStart(car);
-      updateEnd(car); 
+      updateStart(car); 
       carTime = car.time;
-      if(running)
-        loopTrack.add(proyection, carTime);
+      if(running){
+        loopTrack.add(proyection, carTime, car.speed, getAvgSpeedOfLastPeriod(car.speed));
+      }
+      updateEnd(car); 
     }
       
   }
 
-  String printStatus() {
-    if (t.inFocus())
-      return "(" + t.id + " " + int(inTrack) + ")"; 
-    else
-      return "";
-  }
   
   void drawProyection(color c) {
     if (inTrack) {

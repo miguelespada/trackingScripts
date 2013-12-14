@@ -25,7 +25,7 @@ class LoopTrack{
      pos = new LoopPoint(new PVector(0, 0), 0, 0);
    }
    
-   void add(PVector p, float time){
+   void add(PVector p, float time, float speed, float avgSpeed){
      if(p.x != pos.pos.x && p.y != pos.pos.y){
        float dst = tramo.calculateDistanceFromStart(p);
        pos = new LoopPoint(p, time, dst);
