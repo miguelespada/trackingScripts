@@ -15,12 +15,13 @@ class LoopTrack{
    Tramo tramo;
    
    LoopTrack(Tramo t){
+     loopTrack = new ArrayList<LoopPoint>();
      reset();
      this.tramo = t;
    } 
    
    void reset(){
-     loopTrack = new ArrayList<LoopPoint>();
+     loopTrack.clear();
      pos = new LoopPoint(new PVector(0, 0), 0, 0);
    }
    
@@ -33,6 +34,15 @@ class LoopTrack{
    }
    float calculateDistanceFromStart(){
      return pos.distance; 
+   }
+   float calculateAvgSpeedOfLastPeriod(){
+      if(loopTrack.size() > 1){
+       LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
+       return (pos.distance - prev.distance)/(pos.time - prev.time);
+     }
+     else{
+       return -1;
+     }
    }
    
    

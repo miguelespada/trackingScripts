@@ -12,9 +12,10 @@ class TramoStatus {
   int startTime = 0;
   int endTime = 0;
   int carTime = 0;
-  PVector proyection;
+  PVector proyection, pProyection;
   
   LoopTrack loopTrack;
+  boolean fresh = false;
   
 
   TramoStatus(Tramo t) {
@@ -31,6 +32,7 @@ class TramoStatus {
     startTime = 0;
     endTime = 0;
     proyection = new PVector();
+    pProyection = new PVector();
     pdStart = 1000000;
     dStart = 1000000;
     pdEnd = 1000000;
@@ -38,14 +40,8 @@ class TramoStatus {
   }
   
   void updateClosest(PVector pos) {
-    float minDist = 10000000;
-    for (int i = 0; i < t.n; i ++) {
-      float d = pos.dist(t.data[i]);
-      if (d < minDist) {
-        proyection = t.data[i];
-        minDist = d;
-      }
-    }
+    proyection = t.getClosest(pos);
+   
   }
 
   void updateInTrack(PVector pos) {
@@ -54,7 +50,7 @@ class TramoStatus {
   }
   
   void updateStart(Car car) {  
-    dStart = car.pos.dist(t.start);   
+    dStart = t.distToStart(car.pos);
     if (inTrack && 
       !running && 
       dStart + trackThreshold > pdStart && 
@@ -62,13 +58,14 @@ class TramoStatus {
         
       running = true;
       loopTrack.reset();
-      loopTrack.add(t.start, car.pTime);
+      loopTrack.add(t.getStart(), car.pTime);
       startTime = car.pTime;
     }
     pdStart = dStart;
   }
   void updateEnd(Car car) {
-    dEnd = car.pos.dist(t.end);
+    dEnd = t.distToEnd(car.pos);
+
     if (!inTrack && running && dEnd < 500) 
      { 
       inTrack = false;
@@ -80,14 +77,21 @@ class TramoStatus {
   }
 
   void update(Car car) {
+    pProyection.x =  proyection.x;
+    pProyection.y =  proyection.y;
     updateInTrack(car.pos);
-    updateStart(car);
-    updateEnd(car); 
-    //if (!inTrack) running = false;
-    carTime = car.time;
-    if(running)
-      loopTrack.add(proyection, carTime);
-    
+    if(pProyection.equals(proyection)){
+      fresh = false;
+    }
+    else{
+      fresh = true;
+      updateStart(car);
+      updateEnd(car); 
+      carTime = car.time;
+      if(running)
+        loopTrack.add(proyection, carTime);
+    }
+      
   }
 
   String printStatus() {
@@ -120,10 +124,17 @@ class TramoStatus {
   float getCurrentTime(){
     return carTime - startTime;
   }
-  
+  float getAvgSpeedOfLastPeriod(float speed){
+      float avgSpeed = loopTrack.calculateAvgSpeedOfLastPeriod();
+      if (avgSpeed == -1) avgSpeed = speed;
+      return avgSpeed;
+  }
   void sendCar(int id, float speed){
-    if(t.inFocus() && inTrack){
-      oscSendCar(id, int(proyection.x - t.start.x), int(proyection.y - t.start.y), speed);
+    if(t.inFocus() && inTrack && fresh){
+      oscSendCar(id, int(proyection.x - t.getStart().x), 
+                     int(proyection.y - t.getStart().y), 
+                     getAvgSpeedOfLastPeriod(speed), 
+                     speed);
     }
   }
 }

@@ -128,8 +128,8 @@ class Car {
     fill(0);
     textSize(s * 0.8);
     textAlign(LEFT);
-    text("id: " + id + " idle time: " +  int((frameCount - active)/frameRate) + " s", x, y + s);
-    text("speed: " + int(speed), x, y + s * 2);
+    text("Id: " + id + " idle time: " +  int((frameCount - active)/frameRate) + " s", x, y + s);
+    text("Speed: " + int(speed) + " km/h", x, y + s * 2);
 
     String status = "";
 
@@ -142,17 +142,17 @@ class Car {
       fill(0, 255, 255);
       text("Status: DONE", x, y + s * 3);
       float cTime = t.getEndTime();
-      text("Time: " + int(cTime), x, y + s * 4); 
       float kmh = (dst / cTime) * 3.600;
-      text("Dist: " + int(dst) + " Avg " + int(kmh) + " km/h", x, y + s * 5);
+      text("Time: " + int(cTime) + " Dist: " + int(dst) + " Avg " + int(kmh) + " km/h", x, y + s * 5);
     }
     else if (t.running) {
       fill(0, 0, 255);
       text("Status: RUNNING", x, y + s * 3);
       float cTime =  t.getCurrentTime(); 
-      text("Time: " + int(cTime), x, y + s * 4);  
+      float avgSpeedLastPeriod = t.getAvgSpeedOfLastPeriod(speed);
+      text( "Delta speed: " + int(avgSpeedLastPeriod * 3.6) + " km/h", x, y + s * 4);  
       float kmh = (dst / cTime) * 3.6;
-      text("Dist: " + int(dst) + " Avg " + int(kmh) + " km/h", x, y + s * 5);
+      text("Time: " + int(cTime) + " Dist: " + int(dst) + " Avg " + int(kmh) + " km/h", x, y + s * 5);
     }
     else if (t.inTrack) {
       fill(0, 255, 0);

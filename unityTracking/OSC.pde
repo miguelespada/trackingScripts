@@ -26,11 +26,12 @@ void oscEvent(OscMessage theOscMessage) {
   println("### received an osc message. with address pattern "+
     theOscMessage.addrPattern()+" typetag "+ theOscMessage.typetag());
 }
-void oscSendCar(int id, int x, int y, float s){
+void oscSendCar(int id, int x, int y, float avgS, float s){
   OscMessage myMessage = new OscMessage("/car");
   myMessage.add(id); 
   myMessage.add(x); 
   myMessage.add(y); 
+  myMessage.add(avgS); 
   myMessage.add(s); 
   oscP5.send(myMessage, myRemoteLocation); 
 }

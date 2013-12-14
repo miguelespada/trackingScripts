@@ -15,7 +15,7 @@ class Tramos {
     for (Tramo t: tramos) {
       if (t.id == focus) {
         t.setFocus(true);
-        r = t.start;
+        r = t.getStart();
       }
       else {
         t.setFocus(false);

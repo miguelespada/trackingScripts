@@ -1,10 +1,22 @@
+class TramoPoint {
+  PVector pos;
+  float dst;
+  float avgSpeed;
+  TramoPoint(PVector pos, float dst) {
+    this.dst = dst;
+    this.pos = pos;
+    avgSpeed = 0;
+  }
+}
+
 class Tramo {
 
-  PVector data[];
-  PVector end, start;
+  ArrayList<TramoPoint> data;
+  TramoPoint end, start;
   int n;
   int id;
   boolean bFocus = false;
+
   ArrayList<Car> clasification;
   ArrayList<Car> finalClasification;
 
@@ -13,22 +25,26 @@ class Tramo {
     clasification = new ArrayList<Car>();
     finalClasification = new ArrayList<Car>();
   }
-  
+
   boolean inFocus() {
     return bFocus;
   }
-  
+
   void loadData(String fileName) {
     String lines[] = loadStrings(fileName);
     n = lines.length;
-    data = new PVector[n];
+    data = new ArrayList<TramoPoint>();
+    float dst = 0;
     for (int i = 0 ; i < n; i++) {
       String[] tokens = splitTokens(lines[i]);
-      data[i] = new PVector(int(tokens[0]), int(tokens[1]));
+      PVector pos = new PVector(int(tokens[0]), int(tokens[1]));
+      if (i > 1)
+        dst += data.get(i - 1).pos.dist(pos);
+      data.add(new TramoPoint(pos, dst));
     }
     if (n > 0) {
-      start = data[0];
-      end = data[n - 1];
+      start = data.get(0);
+      end = data.get(data.size() - 1);
     }
   }
   void draw() {
@@ -38,47 +54,66 @@ class Tramo {
       stroke(255, 50);
 
     for (int i = 0 ; i < n - 1; i++) {
-      float x0 = data[i].x;
-      float y0 = data[i].y;
-      float x1 = data[i + 1].x;
-      float y1 = data[i + 1].y;
+      float x0 = data.get(i).pos.x;
+      float y0 = data.get(i).pos.y;
+      float x1 = data.get(i + 1).pos.x;
+      float y1 = data.get(i + 1).pos.y;
       point(x0, y0);
       line(x0, y0, x1, y1);
     }
     pushStyle();
-      fill(255, 0, 0);
-      noStroke();
-      ellipse(start.x, start.y, 10, 10);
-      fill(0, 255, 0);
-      noStroke();
-      ellipse(end.x, end.y, 10, 10); 
+    fill(255, 0, 0);
+    noStroke();
+    ellipse(start.pos.x, start.pos.y, 10, 10);
+    fill(0, 255, 0);
+    noStroke();
+    ellipse(end.pos.x, end.pos.y, 10, 10); 
     popStyle();
   }
-  
+
   void setFocus(boolean b) {
     bFocus = b;
   }
-  
-  float calculateDistanceFromStart(PVector pos){
-    float d = 0;
-    for(int i = 1; i < n; i ++){
-      PVector p0 = data[i - 1];
-      PVector p1 = data[i];
-      if(pos.x == p0.x && pos.y == p0.y)
-        break;
-      d += p0.dist(p1);
+
+  float calculateDistanceFromStart(PVector pos) {
+    for (TramoPoint p: data) {
+      if (p.pos.x == pos.x && p.pos.y == pos.y)
+        return p.dst;
     }
-    return d;
+    return -1;
   }
   
-  void calculateCurrentClassification(){
+  PVector getClosest(PVector pos){
+   float minDist = 10000000;
+   PVector proyection = null;
+    for (TramoPoint p: data) {
+      float d = pos.dist(p.pos);
+      if (d < minDist) {
+        proyection = p.pos;
+        minDist = d;
+      }
+    }
+    return proyection;
+  }
+  float distToStart(PVector pos){
+    return pos.dist(start.pos);
+  }
+  
+  float distToEnd(PVector pos){
+    return pos.dist(end.pos);
+  }
+  PVector getStart(){
+    return start.pos;
+  }
+
+  void calculateCurrentClassification() {
     ArrayList<Car> activeCars = cars.getActiveCars(id);
     clasification.clear();
-    for(Car c: activeCars){
+    for (Car c: activeCars) {
       int i = 0;
       float d = c.getActiveDistance();
-      while(i < clasification.size()){
-        if(d > clasification.get(i).getActiveDistance())
+      while (i < clasification.size ()) {
+        if (d > clasification.get(i).getActiveDistance())
           break;
         else
           i ++;
@@ -86,15 +121,15 @@ class Tramo {
       clasification.add(i, c);
     }
   }
-  
-  void calculateFinalClassification(){
+
+  void calculateFinalClassification() {
     ArrayList<Car> finalizedCars = cars.getFinalizedCars(id);
     finalClasification.clear();
-    for(Car c: finalizedCars){
+    for (Car c: finalizedCars) {
       int i = 0;
       float d = c.getEndTime();
-      while(i < finalClasification.size()){
-        if(d < finalClasification.get(i).getEndTime())
+      while (i < finalClasification.size ()) {
+        if (d < finalClasification.get(i).getEndTime())
           break;
         else
           i ++;
@@ -102,35 +137,34 @@ class Tramo {
       finalClasification.add(i, c);
     }
   }
-  
-  
-  void drawCurrentClassification(int x, int y){
+
+
+  void drawCurrentClassification(int x, int y) {
     pushStyle();
     stroke(255);
     fill(255);
     textSize(10);
     String s = "TRAMO (dst) - " + id + "\n" ;
-    for(Car c: clasification){
+    for (Car c: clasification) {
       s += c.id + "   " + int(c.getActiveDistance());
       s += " m \n";
     }
     text(s, x, y);
     popStyle();
   }
-  
-   void drawFinalClassification(int x, int y){
+
+  void drawFinalClassification(int x, int y) {
     pushStyle();
     stroke(255);
     fill(255);
     textSize(10);
     String s = "TRAMO (time) - " + id + "\n" ;
-    for(Car c: finalClasification){
+    for (Car c: finalClasification) {
       s += c.id + "   " + int(c.getEndTime());
       s += " s \n";
     }
     text(s, x, y);
     popStyle();
   }
-  
 }
 
