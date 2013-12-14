@@ -75,7 +75,7 @@ class Tramo {
     bFocus = b;
   }
 
-  float calculateDistanceFromStart(PVector pos) {
+  float getDistanceFromStart(PVector pos) {
     for (TramoPoint p: data) {
       if (p.pos.x == pos.x && p.pos.y == pos.y)
         return p.dst;

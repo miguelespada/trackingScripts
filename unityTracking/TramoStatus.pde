@@ -1,21 +1,18 @@
 int trackThreshold = 30;
 class TramoStatus {
   Tramo t;
+  
+  boolean fresh = false;
   boolean inTrack = false;
   boolean running = false;
   boolean finish = false;
 
-  float pdStart = 1000000;
-  float dStart = 1000000;
-  float pdEnd = 1000000;
-  float dEnd = 1000000;
+  float pdStart, dStart, pdEnd, dEnd;
   int startTime = 0;
   int endTime = 0;
   int carTime = 0;
   PVector proyection, pProyection;
-  
   LoopTrack loopTrack;
-  boolean fresh = false;
   
 
   TramoStatus(Tramo t) {
@@ -28,6 +25,7 @@ class TramoStatus {
     inTrack = false;
     running = false;
     finish = false;
+    fresh = false;
     loopTrack.reset();
     startTime = 0;
     endTime = 0;
@@ -39,58 +37,65 @@ class TramoStatus {
     dEnd = 1000000;
   }
   
-  void updateClosest(PVector pos) {
-    proyection = t.getClosest(pos);
-   
+  PVector updateProyection(PVector pos) {
+    return t.getClosest(pos);
   }
 
-  void updateInTrack(PVector pos) {
-    updateClosest(pos);
-    inTrack = (pos.dist(proyection) < trackThreshold);
+  boolean updateInTrack(Car car) {
+    return car.pos.dist(proyection) < trackThreshold;
   }
   
-  void updateStart(Car car) {  
+  boolean updateStart(Car car) {  
     dStart = t.distToStart(car.pos);
     if (inTrack && 
       !running && 
       dStart + trackThreshold > pdStart && 
       car.speed > 30) {
         
-      running = true;
       loopTrack.reset();
-      loopTrack.add(t.getStart(), car.pTime, car.speed, getAvgSpeedOfLastPeriod(car.speed));
+      loopTrack.add(t.getStart(), 
+                    car.pTime, 
+                    car.speed, 
+                    getAvgSpeedOfLastPeriod(car.speed));
       startTime = car.pTime;
+      return true;
     }
     pdStart = dStart;
+    return false;
   }
-  void updateEnd(Car car) {
+  boolean updateEnd(Car car) {
     dEnd = t.distToEnd(car.pos);
 
-    if (!inTrack && running && dEnd < 500) 
+    if (!inTrack && running && dEnd < 200) 
      { 
       inTrack = false;
       running = false;
-      finish = true;
       endTime = car.time;
+      return true;
     }
     pdEnd = dEnd;
+    return false;
   }
 
   void update(Car car) {
     pProyection.x =  proyection.x;
     pProyection.y =  proyection.y;
-    updateInTrack(car.pos);
+    
+    proyection = updateProyection(car.pos);
     if(pProyection.equals(proyection)){
       fresh = false;
     }
     else{
+      
       fresh = true;
-      updateStart(car); 
+      inTrack = updateInTrack(car);
+      running = updateStart(car); 
       carTime = car.time;
       if(running){
-        loopTrack.add(proyection, carTime, car.speed, getAvgSpeedOfLastPeriod(car.speed));
+        loopTrack.add(proyection, car.time, car.speed, 
+                      getAvgSpeedOfLastPeriod(car.speed));
       }
-      updateEnd(car); 
+      finish = updateEnd(car); 
     }
       
   }
@@ -107,9 +112,8 @@ class TramoStatus {
     }
   }
   float calculateDistanceFromStart(){
-    if(inTrack && !running)
-      return 0;
-    return loopTrack.calculateDistanceFromStart();
+    if(inTrack && !running) return 0;
+    return loopTrack.getDistanceFromStart();
   }
   
   float getEndTime(){

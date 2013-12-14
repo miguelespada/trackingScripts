@@ -2,10 +2,21 @@ class LoopPoint{
   PVector pos;
   float time;
   float distance;
-  LoopPoint(PVector pos, float time, float distance){
+  float speed;
+  float avgSpeed;
+  LoopPoint(){
+    pos = new PVector(0, 0);
+    time = 0;
+    distance = 0;
+    speed = 0;
+    avgSpeed = 0;
+  }
+  LoopPoint(PVector pos, float time, float distance, float speed, float avgSpeed){
     this.pos = pos;
     this.time = time;
     this.distance = distance;
+    this.speed = speed;
+    this.avgSpeed = avgSpeed; 
   }
 }
 class LoopTrack{
@@ -22,17 +33,17 @@ class LoopTrack{
    
    void reset(){
      loopTrack.clear();
-     pos = new LoopPoint(new PVector(0, 0), 0, 0);
+     pos = new LoopPoint();
    }
    
    void add(PVector p, float time, float speed, float avgSpeed){
      if(p.x != pos.pos.x && p.y != pos.pos.y){
-       float dst = tramo.calculateDistanceFromStart(p);
-       pos = new LoopPoint(p, time, dst);
+       float dst = tramo.getDistanceFromStart(p);
+       pos = new LoopPoint(p, time, dst, speed, avgSpeed);
        loopTrack.add(pos);
      }
    }
-   float calculateDistanceFromStart(){
+   float getDistanceFromStart(){
      return pos.distance; 
    }
    float calculateAvgSpeedOfLastPeriod(){
