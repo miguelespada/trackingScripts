@@ -1,4 +1,7 @@
 int trackThreshold = 30;
+int endThreshold = 500;
+
+
 class TramoStatus {
   Tramo t;
   
@@ -51,13 +54,6 @@ class TramoStatus {
       !running && 
       dStart + trackThreshold > pdStart && 
       car.speed > 30) {
-        
-      loopTrack.reset();
-      loopTrack.add(t.getStart(), 
-                    car.pTime, 
-                    car.speed, 
-                    getAvgSpeedOfLastPeriod(car.speed));
-      startTime = car.pTime;
       return true;
     }
     pdStart = dStart;
@@ -66,10 +62,8 @@ class TramoStatus {
   boolean updateEnd(Car car) {
     dEnd = t.distToEnd(car.pos);
 
-    if (!inTrack && running && dEnd < 200) 
+    if (!inTrack && running && dEnd < endThreshold) 
      { 
-      inTrack = false;
-      running = false;
       endTime = car.time;
       return true;
     }
@@ -89,13 +83,24 @@ class TramoStatus {
       
       fresh = true;
       inTrack = updateInTrack(car);
-      running = updateStart(car); 
+      if(!running){
+        running = updateStart(car); 
+        if(running){  
+          loopTrack.reset();
+          startTime = car.pTime;
+        } 
+      }
       carTime = car.time;
       if(running){
         loopTrack.add(proyection, car.time, car.speed, 
                       getAvgSpeedOfLastPeriod(car.speed));
       }
+      
       finish = updateEnd(car); 
+      if(finish){
+        inTrack = false;
+        running = false;
+      }
     }
       
   }
