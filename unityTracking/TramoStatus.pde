@@ -4,34 +4,31 @@ int endThreshold = 500;
 
 class TramoStatus {
   Tramo t;
-  
+  Car car;
+
   boolean fresh = false;
   boolean inTrack = false;
   boolean running = false;
   boolean finish = false;
 
   float pdStart, dStart, pdEnd, dEnd;
-  int startTime = 0;
-  int endTime = 0;
-  int carTime = 0;
   PVector proyection, pProyection;
   LoopTrack loopTrack;
-  
 
-  TramoStatus(Tramo t) {
+
+  TramoStatus(Car c, Tramo t) {
     this.t = t;
+    this.car = c;
     loopTrack = new LoopTrack(this.t);
     reset();
   }
-  
+
   void reset() {
     inTrack = false;
     running = false;
     finish = false;
     fresh = false;
     loopTrack.reset();
-    startTime = 0;
-    endTime = 0;
     proyection = new PVector();
     pProyection = new PVector();
     pdStart = 1000000;
@@ -39,16 +36,16 @@ class TramoStatus {
     pdEnd = 1000000;
     dEnd = 1000000;
   }
-  
+
   PVector updateProyection(PVector pos) {
     return t.getClosest(pos);
   }
 
-  boolean updateInTrack(Car car) {
+  boolean updateInTrack() {
     return car.pos.dist(proyection) < trackThreshold;
   }
-  
-  boolean updateStart(Car car) {  
+
+  boolean updateStart() {  
     dStart = t.distToStart(car.pos);
     if (inTrack && 
       !running && 
@@ -59,53 +56,51 @@ class TramoStatus {
     pdStart = dStart;
     return false;
   }
-  boolean updateEnd(Car car) {
+  boolean updateEnd() {
     dEnd = t.distToEnd(car.pos);
 
     if (!inTrack && running && dEnd < endThreshold) 
-     { 
-      endTime = car.time;
+    { 
       return true;
     }
     pdEnd = dEnd;
     return false;
   }
 
-  void update(Car car) {
+  void update() {
     pProyection.x =  proyection.x;
     pProyection.y =  proyection.y;
-    
+
     proyection = updateProyection(car.pos);
-    if(pProyection.equals(proyection)){
+    if (pProyection.equals(proyection)) {
       fresh = false;
     }
-    else{
-      
+    else {
+
       fresh = true;
-      inTrack = updateInTrack(car);
-      if(!running){
-        running = updateStart(car); 
-        if(running){  
+      inTrack = updateInTrack();
+      if (!running) {
+        running = updateStart(); 
+        if (running) {  
           loopTrack.reset();
-          startTime = car.pTime;
-        } 
+          loopTrack.setStartTime(car.pTime);
+        }
       }
-      carTime = car.time;
-      if(running){
+      if (running) {
         loopTrack.add(proyection, car.time, car.speed, 
-                      getAvgSpeedOfLastPeriod(car.speed));
+        getAvgSpeedOfLastPeriod(car.speed));
       }
-      
-      finish = updateEnd(car); 
-      if(finish){
+
+      finish = updateEnd(); 
+      if (finish) {
         inTrack = false;
         running = false;
+        loopTrack.setEndTime(car.time);
       }
     }
-      
   }
 
-  
+
   void drawProyection(color c) {
     if (inTrack) {
       pushStyle();
@@ -116,29 +111,34 @@ class TramoStatus {
       popStyle();
     }
   }
-  float calculateDistanceFromStart(){
-    if(inTrack && !running) return 0;
+  float calculateDistanceFromStart() {
+    if (inTrack && !running) return 0;
     return loopTrack.getDistanceFromStart();
   }
-  
-  float getEndTime(){
-    return endTime - startTime;
+
+  float getTotalTime() {
+    return loopTrack.getTotalTime();
+  }
+
+  float getCurrentTime() {
+    return loopTrack.getCurrentTime();
   }
   
-  float getCurrentTime(){
-    return carTime - startTime;
+  float getEndTime() {
+    return loopTrack.getEndTime();
   }
-  float getAvgSpeedOfLastPeriod(float speed){
-      float avgSpeed = loopTrack.calculateAvgSpeedOfLastPeriod();
-      if (avgSpeed == -1) avgSpeed = speed;
-      return avgSpeed;
+  
+  float getAvgSpeedOfLastPeriod(float speed) {
+    float avgSpeed = loopTrack.calculateAvgSpeedOfLastPeriod();
+    if (avgSpeed == -1) avgSpeed = speed;
+    return avgSpeed;
   }
-  void sendCar(int id, float speed){
-    if(t.inFocus() && inTrack && fresh){
+  void sendCar(int id, float speed) {
+    if (t.inFocus() && inTrack && fresh) {
       oscSendCar(id, int(proyection.x - t.getStart().x), 
-                     int(proyection.y - t.getStart().y), 
-                     getAvgSpeedOfLastPeriod(speed), 
-                     speed);
+      int(proyection.y - t.getStart().y), 
+      getAvgSpeedOfLastPeriod(speed), 
+      speed);
     }
   }
 }

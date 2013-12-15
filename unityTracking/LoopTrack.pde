@@ -24,6 +24,7 @@ class LoopTrack{
    ArrayList<LoopPoint> loopTrack;
    LoopPoint pos;
    Tramo tramo;
+   float startTime, endTime;
    
    LoopTrack(Tramo t){
      loopTrack = new ArrayList<LoopPoint>();
@@ -55,6 +56,26 @@ class LoopTrack{
        return -1;
      }
    }
+   void setStartTime(float time){
+     startTime = time;
+   }
+    void setEndTime(float time){
+     endTime = time;
+   }
+   float getStartTime(){
+       return startTime;
+   }
+   float getEndTime(){
+      return endTime;
+   }
+   
+  float getTotalTime() {
+    return endTime - startTime;
+  }
+  
+  float getCurrentTime() {
+    return pos.time - startTime;
+  }
    
    
 }

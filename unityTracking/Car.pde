@@ -37,7 +37,7 @@ class Car {
   
   void update() {  
     for (TramoStatus t: tramos) {
-      t.update(this);
+      t.update();
       if (enabledButton.getValue())
         t.sendCar(id, speed *1000/3600);
     }
@@ -170,7 +170,7 @@ class Car {
     return s*5;
   }
   void registerTramo(Tramo t) {
-    TramoStatus tramo = new TramoStatus(t);
+    TramoStatus tramo = new TramoStatus(this, t);
     tramos.add(tramo);
   }
   boolean inTrack() {
