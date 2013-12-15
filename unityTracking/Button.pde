@@ -3,6 +3,7 @@ class Button {
   boolean state = true;
   int id;
   String type;
+  
   Button(String type, int id) {
     this.id = id;
     this.type = type;
@@ -38,6 +39,7 @@ class Button {
   boolean getValue() {
     return state;
   }
+  
   void setValue(boolean b) {
     state = b;
   }

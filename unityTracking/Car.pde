@@ -137,11 +137,11 @@ class Car {
 
     pushStyle();
 
-    float dst =  t.calculateDistanceFromStart();   
+    float dst =  t.getDistanceFromStart();   
     if (t.finish) {
-      fill(0, 255, 255);
+      fill(0, 123, 0);
       text("Status: DONE", x, y + s * 3);
-      float cTime = t.getEndTime();
+      float cTime = t.getTotalTime();
       float kmh = (dst / cTime) * 3.600;
       text("Time: " + int(cTime) + " Dist: " + int(dst) + " Avg " + int(kmh) + " km/h", x, y + s * 5);
     }
@@ -191,7 +191,7 @@ class Car {
   
   float getActiveDistance(){
      TramoStatus t = getActiveTramo();
-     return int(t.calculateDistanceFromStart());
+     return int(t.getDistanceFromStart());
   }
   
   boolean enabled(){

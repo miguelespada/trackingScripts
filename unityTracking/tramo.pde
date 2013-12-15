@@ -1,11 +1,22 @@
 class TramoPoint {
   PVector pos;
   float dst;
-  float avgSpeed;
+  float accSpeed;
+  float n = 0;
+  
   TramoPoint(PVector pos, float dst) {
     this.dst = dst;
     this.pos = pos;
-    avgSpeed = 0;
+    this.accSpeed = 0;
+    this.n = 0;
+  }
+  
+  void addAvg(float avg){
+    this.accSpeed += avg;  
+    this.n += 1;
+  }
+  float getAvg(){
+    return accSpeed/n;
   }
 }
 
@@ -48,16 +59,26 @@ class Tramo {
     }
   }
   void draw() {
-    if (bFocus)
-      stroke(255);
-    else
-      stroke(255, 50);
+    
+ //   colorMode(HSB, 360, 100, 100);
+    int opacity = 255;
+    if (!bFocus)
+      opacity = 50;
+
 
     for (int i = 0 ; i < n - 1; i++) {
       float x0 = data.get(i).pos.x;
       float y0 = data.get(i).pos.y;
       float x1 = data.get(i + 1).pos.x;
       float y1 = data.get(i + 1).pos.y;
+      float a = data.get(i).getAvg();
+      strokeWeight(10);
+      if (a == 0) 
+        stroke(0, opacity);
+      else{
+        float v = map(a, 0, 120, 0, 255);
+        stroke(v, opacity);
+      }
       point(x0, y0);
       line(x0, y0, x1, y1);
     }
@@ -69,6 +90,7 @@ class Tramo {
     noStroke();
     ellipse(end.pos.x, end.pos.y, 10, 10); 
     popStyle();
+    colorMode(RGB);
   }
 
   void setFocus(boolean b) {
@@ -77,10 +99,24 @@ class Tramo {
 
   float getDistanceFromStart(PVector pos) {
     for (TramoPoint p: data) {
-      if (p.pos.x == pos.x && p.pos.y == pos.y)
+      if(p.pos.equals(pos))
         return p.dst;
     }
     return -1;
+  }
+  void propagateAverages(PVector i, PVector o, float avg){
+     boolean found = false;
+     
+     for (TramoPoint p: data) {
+      if(found || p.pos.equals(i))  
+        found = true;
+      
+      if(found)
+        p.addAvg(avg);  
+      if(found && p.pos.equals(o))  
+        found = false;
+     }  
+    
   }
   
   PVector getClosest(PVector pos){

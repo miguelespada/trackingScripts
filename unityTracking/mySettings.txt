@@ -10,9 +10,9 @@ focus 1
 active_8 false
 active_7 true
 dZ 0.15266667
-dY 1947.7423
+dY 1573.1227
 active_5 true
-dX 2832.1006
+dX 2772.4492
 active_4 true
 active_3 false
 enable_11 true
