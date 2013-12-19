@@ -41,3 +41,9 @@ void oscSendActiveCars(String s){
   myMessage.add(s); 
   oscP5.send(myMessage, myRemoteLocation);   
 }
+
+void oscSendReset(int id){
+  OscMessage myMessage = new OscMessage("/reset");
+  myMessage.add(id); 
+  oscP5.send(myMessage, myRemoteLocation);   
+}

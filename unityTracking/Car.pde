@@ -24,6 +24,7 @@ class Car {
     enabledButton = new Button("enable", id);
     soloButton = new Button("solo", id);
   }
+  
   void reset() {
     for (TramoStatus t: tramos)
       t.reset();

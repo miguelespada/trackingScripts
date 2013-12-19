@@ -80,8 +80,10 @@ class TramoStatus {
       inTrack = updateInTrack();
       if (!running) {
         running = updateStart(); 
-        if (running) 
+        if (running) {
           loopTrack.reset();
+            oscSendReset(car.id);
+        }
       }
       
       if (running) {

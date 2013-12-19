@@ -73,12 +73,13 @@ class Tramo {
       float y1 = data.get(i + 1).pos.y;
       float a = data.get(i).getAvg();
       strokeWeight(10);
-      if (a == 0) 
-        stroke(0, opacity);
-      else{
-        float v = map(a, 0, 120, 0, 255);
-        stroke(v, opacity);
-      }
+//      if (a == 0) 
+//        stroke(0, opacity);
+//      else{
+//        float v = map(a, 0, 120, 0, 255);
+//        stroke(v, opacity);
+//      }
+      stroke(255, opacity);
       point(x0, y0);
       line(x0, y0, x1, y1);
     }

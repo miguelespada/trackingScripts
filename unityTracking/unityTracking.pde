@@ -49,8 +49,8 @@ void draw() {
   tramos.drawCurrentClassification(width - 200, 20);
   tramos.drawFinalClassification(width - 100, 20);
   
-  if(frameCount % 10 == 0){
+  //if(frameCount % 10 == 0){
     cars.sendActiveCars(tramos.focus);
-  }
+  //}
 }
 

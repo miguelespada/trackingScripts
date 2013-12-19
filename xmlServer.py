@@ -32,7 +32,9 @@ class GPS:
         theFile = self.path + "gps" + str(self.i) + ".xml"
         self.i += 1
         if self.i == self.O:
-            self.i = self.I
+            #self.i = self.I
+            self.i -= 1
+            #sendOscReset()
         tree = ET.parse(theFile)
         return tree.getroot()
 
