@@ -1,4 +1,4 @@
-int trackThreshold = 30;
+int trackThreshold = 20;
 int endThreshold = 500;
 
 class TramoStatus {
