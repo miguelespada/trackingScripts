@@ -52,6 +52,7 @@ class Cars {
       for (int i = 0; i < 25; i++) {
         if (cars[i].isActive())
           cars[i].draw();
+          
       }
     }
   }
@@ -123,8 +124,15 @@ class Cars {
   
   }
   void drawLoop(int t){
-  for (int i = 0; i < 25; i++) 
-      cars[i].drawLoop(t);
+    for (int i = 0; i < 25; i++) {
+        if(cars[i].isActive())
+          cars[i].drawLoop(t);
+    }    
+  }
+  void sendLoop(int t){
+    for (int i = 0; i < 25; i++) {
+          cars[i].sendLoop(t);
+    }    
   }
   void resetLoop(int t){
   for (int i = 0; i < 25; i++) 

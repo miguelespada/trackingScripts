@@ -27,6 +27,7 @@ class Tramo {
   int n;
   int id;
   boolean bFocus = false;
+  float totalLength;
 
   ArrayList<Car> clasification;
   ArrayList<Car> finalClasification;
@@ -57,28 +58,18 @@ class Tramo {
       start = data.get(0);
       end = data.get(data.size() - 1);
     }
+    this.totalLength = dst;
   }
   void draw() {
-    
- //   colorMode(HSB, 360, 100, 100);
     int opacity = 255;
     if (!bFocus)
       opacity = 50;
-
-
     for (int i = 0 ; i < n - 1; i++) {
       float x0 = data.get(i).pos.x;
       float y0 = data.get(i).pos.y;
       float x1 = data.get(i + 1).pos.x;
       float y1 = data.get(i + 1).pos.y;
       float a = data.get(i).getAvg();
-      strokeWeight(10);
-//      if (a == 0) 
-//        stroke(0, opacity);
-//      else{
-//        float v = map(a, 0, 120, 0, 255);
-//        stroke(v, opacity);
-//      }
       stroke(255, opacity);
       point(x0, y0);
       line(x0, y0, x1, y1);
@@ -119,16 +110,21 @@ class Tramo {
      }  
     
   }
+  PVector get(int i){
+    return data.get(i).pos;
+  }
   
-  PVector getClosest(PVector pos){
+  int getClosest(PVector pos){
    float minDist = 10000000;
-   PVector proyection = null;
-    for (TramoPoint p: data) {
+   int proyection = -1;
+   int i = 0;
+   for (TramoPoint p: data) {
       float d = pos.dist(p.pos);
       if (d < minDist) {
-        proyection = p.pos;
+        proyection = i;
         minDist = d;
       }
+      i ++;
     }
     return proyection;
   }

@@ -41,7 +41,9 @@ class Tramos {
       }
     }
   }
-  
+  void draw(int i){
+    tramos.get(i).draw();
+  }
   void drawCurrentClassification(int x, int y) {
     for (Tramo t: tramos){
       if(t.inFocus())

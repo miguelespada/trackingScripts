@@ -11,12 +11,13 @@ class TramoStatus {
 
   float pdStart, dStart, pdEnd, dEnd;
   PVector proyection, pProyection;
+  int proyectionIdx, pProyectionIdx;
   LoopTrack loopTrack;
 
   TramoStatus(Car c, Tramo t) {
     this.t = t;
     this.car = c;
-    loopTrack = new LoopTrack(this.t);
+    loopTrack = new LoopTrack(this.t, this.car);
     reset();
   }
 
@@ -33,7 +34,7 @@ class TramoStatus {
     dEnd = 1000000;
   }
 
-  PVector updateProyection(PVector pos) {
+  int updateProyection(PVector pos) {
     return t.getClosest(pos);
   }
 
@@ -68,28 +69,31 @@ class TramoStatus {
       
     pProyection.x =  proyection.x;
     pProyection.y =  proyection.y;
+    pProyectionIdx = proyectionIdx;
 
-    proyection = updateProyection(car.pos);
-    if (car.fresh = true) {
+    proyectionIdx = updateProyection(car.pos);
+    proyection = t.get(proyectionIdx);
+    
+    if (car.fresh = true && !proyection.equals(pProyection)) {
+      car.fresh = false;
       inTrack = updateInTrack();
+      
       if (!running) {
         running = updateStart(); 
         if (running) {
           oscSendReset(car.id);
           loopTrack.reset();
-          println((pProyection.x - t.getStart().x) + " " +  (pProyection.y - t.getStart().y));
-          loopTrack.add(pProyection, car.pTime, 0);
+          loopTrack.add(pProyection, pProyectionIdx, car.pTime, 0, "start", car.pos.dist(proyection) );
         }
-        
-        car.fresh = false;
       }
       
-      if(running) {
-        loopTrack.add(proyection, car.time, car.speed);
-      }
+      if(running ) 
+          loopTrack.add(proyection, proyectionIdx, car.time, car.speed, "running", car.pos.dist(proyection) );
+      
 
       finish = updateEnd(); 
-      if (finish) {
+      if (finish) {             
+        loopTrack.add("end");
         inTrack = false;
         running = false;
       }
@@ -137,14 +141,17 @@ class TramoStatus {
 //      int(proyection.y - t.getStart().y), 
 //      getAvgSpeedOfLastPeriod(speed), 
 //      speed, "current");
-         println("Drawing normal " + getAvgSpeedOfLastPeriod(speed) + " " +
-         int(proyection.x - t.getStart().x) + " " + 
-          int(proyection.y - t.getStart().y));
+//         println("Drawing normal " + getAvgSpeedOfLastPeriod(speed) + " " +
+//         int(proyection.x - t.getStart().x) + " " + 
+//          int(proyection.y - t.getStart().y));
 
     }
   }
   void drawLoop(){
     loopTrack.drawLoop(car.id);
+  }
+  void sendLoop(){
+    loopTrack.sendLoop(car.id);
   }
    void resetLoop(){
     loopTrack.resetLoop();

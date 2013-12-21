@@ -23,7 +23,7 @@ void keyPressed() {
     }
     if(key == 'l'){
       println("Reseting loop");
-      cars.resetLoop(1);
+      cars.resetLoop(0);
     }
   }
 }

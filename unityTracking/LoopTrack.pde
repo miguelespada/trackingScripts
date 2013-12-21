@@ -4,18 +4,20 @@ class LoopPoint {
   float distance;
   float speed;
   float avgSpeed;
+  int idx;
   LoopPoint() {
     pos = new PVector(0, 0);
     time = 0;
     distance = 0;
     speed = 0;
   }
-  LoopPoint(PVector pos, float time, float distance, float speed) {
+  LoopPoint(PVector pos, float time, float distance, float speed, int idx) {
     this.pos = pos;
     this.time = time;
     this.distance = distance;
     this.speed = speed;
     this.avgSpeed = avgSpeed;
+    this.idx = idx;
   }
 }
 class LoopTrack {
@@ -24,23 +26,78 @@ class LoopTrack {
   LoopPoint pos;
   Tramo tramo;
   int drawIdx = 0;
-
-  LoopTrack(Tramo t) {
+  PrintWriter output;
+  String fileName;
+  Car car;
+  LoopTrack(Tramo t, Car c) {
     loopTrack = new ArrayList<LoopPoint>();
+    fileName = "data/Tramo_" + t.id + "_car_" + c.id + ".csv";
     reset();
     this.tramo = t;
+    this.car = c;
   } 
 
   void reset() {
     loopTrack.clear();
     pos = new LoopPoint();
-  }
+    
+    output = createWriter(fileName);
 
-  void add(PVector p, float time, float speed) {
-    if (p.x != pos.pos.x && p.y != pos.pos.y) {
+    
+    
+  }
+ void add(String st) {
+    output.println(car.id + ","  +  "*" + "," + st);
+    output.flush();
+
+  output.close();
+ }
+  void add(PVector p, int pIdx, float time, float speed, String st, float dstProyection) {
+    if ((p.x != pos.pos.x && p.y != pos.pos.y) ) {
       float dst = tramo.getDistanceFromStart(p);
-      pos = new LoopPoint(new PVector(p.x, p.y), time, dst, speed);
+      pos = new LoopPoint(new PVector(p.x, p.y), time, dst, speed, pIdx);
       loopTrack.add(pos);
+      if(st.equals("start")){
+        output.println("car id, gps track, state, track idx, time, calculated speed, real speed, dst to end, distance, point x, point y, normalized x, normalized y, dst to projection");
+      }
+      float avg = calculateAvgSpeedOfLastPeriod();
+      if(st.equals("running")){
+        LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
+        
+        for(int i = prev.idx + 1; i < pos.idx; i ++){
+          float localDst = tramo.getDistanceFromStart(tramo.get(i)) - prev.distance;
+          float localTime = (localDst/avg);
+          output.println(car.id + "," +  "-" + ","
+              + st + "," 
+              + i + ","
+              + int((localTime + prev.time - getStartTime())*10)/10.0 + "," 
+              + int(avg*100)/100.0 + "," 
+              + "?" + ","
+              + int((tramo.totalLength -  tramo.getDistanceFromStart(tramo.get(i)))) + ","
+              + int(tramo.getDistanceFromStart(tramo.get(i)) ) + "," 
+              + tramo.get(i).x + "," 
+              + tramo.get(i).y + "," 
+              + int((tramo.get(i).x - tramo.getStart().x)) + "," 
+              + int((tramo.get(i).y - tramo.getStart().y)) + ","
+              + "?");  
+        }
+      }
+      
+      
+      output.println(car.id + ","  +  "*" + ","
+              + st + "," 
+              + pIdx + ","
+              + getCurrentTime() + "," 
+              + int(avg*100)/100.0 + "," 
+              + (speed * 1000/3600) + ","
+              + int((tramo.totalLength - dst)) + ","
+              + int(dst) + ","
+              + p.x + "," 
+              + p.y + "," 
+              + int((p.x - tramo.getStart().x)) + "," 
+              + int((p.y - tramo.getStart().y)) + ","
+              + int(dstProyection));    
+      output.flush();
     }
   }
 
@@ -77,6 +134,23 @@ class LoopTrack {
     return pos.time - getStartTime();
   }
   void drawLoop(int carId){
+    for(int i = 1; i < loopTrack.size(); i ++){
+      LoopPoint lp = loopTrack.get(i);
+      LoopPoint prev = loopTrack.get(i - 1);
+      float avg = (lp.distance - prev.distance)/(lp.time - prev.time);
+      int x0 = int(prev.pos.x);
+      int y0 = int(prev.pos.y); 
+      int x1 = int(lp.pos.x);
+      int y1 = int(lp.pos.y); 
+      pushStyle();
+      int r = int(map(avg, 0, 150, 50, 255));
+      strokeWeight(10);
+      stroke(r);
+      line(x0, y0, x1, y1);
+      popStyle();
+    }
+  }
+  void sendLoop(int carId){
     if(frameCount % 60 != 0) return;
     if(drawIdx < loopTrack.size()){
       LoopPoint lp = loopTrack.get(drawIdx);
@@ -96,7 +170,7 @@ class LoopTrack {
                         lp.speed, 
                         st);
                         
-      println(carId + "--- Drawing loop " + st + " " + drawIdx + " " + 
+      println(carId + "--- Sending loop " + st + " " + drawIdx + " " + 
                  avg + " " +
                  int(lp.pos.x - tramo.getStart().x) + " " +
                  int(lp.pos.y - tramo.getStart().y) );

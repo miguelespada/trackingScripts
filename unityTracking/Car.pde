@@ -42,8 +42,7 @@ class Car {
     for (TramoStatus t: tramos) {
       t.update();
       if (enabledButton.getValue()){
-          t.sendCar(id, speed *1000/3600);
-        t.drawLoop();
+        t.sendCar(id, speed *1000/3600);
       }
     }
   }
@@ -224,7 +223,15 @@ class Car {
   }
   void drawLoop(int tId){
      for (TramoStatus t: tramos)
-      if (t.t.id == tId) t.drawLoop();
+      if (t.t.id == tId) {
+        t.drawLoop();
+      }
+  }
+  void sendLoop(int tId){
+     for (TramoStatus t: tramos)
+      if (t.t.id == tId) {
+        t.sendLoop();
+      }
   }
   void resetLoop(int tId){
      for (TramoStatus t: tramos)
