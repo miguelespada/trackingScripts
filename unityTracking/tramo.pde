@@ -49,7 +49,7 @@ class Tramo {
     float dst = 0;
     for (int i = 0 ; i < n; i++) {
       String[] tokens = splitTokens(lines[i]);
-      PVector pos = new PVector(int(tokens[0]), int(tokens[1]));
+      PVector pos = new PVector(float(tokens[0]), float(tokens[1]));
       if (i > 1)
         dst += data.get(i - 1).pos.dist(pos);
       data.add(new TramoPoint(pos, dst));
@@ -71,6 +71,8 @@ class Tramo {
       float y1 = data.get(i + 1).pos.y;
       float a = data.get(i).getAvg();
       stroke(255, opacity);
+    if (!bFocus)      stroke(255, 0, 255);
+
       point(x0, y0);
       line(x0, y0, x1, y1);
     }
@@ -177,7 +179,7 @@ class Tramo {
     stroke(255);
     fill(255);
     textSize(10);
-    String s = "TRAMO (dst) - " + id + "\n" ;
+    String s = "" ;
     for (Car c: clasification) {
       s += c.id + "   " + int(c.getActiveDistance());
       s += " m \n";
@@ -191,13 +193,16 @@ class Tramo {
     stroke(255);
     fill(255);
     textSize(10);
-    String s = "TRAMO (time) - " + id + "\n" ;
+    String s = "" ;
     for (Car c: finalClasification) {
-      s += c.id + "   " + int(c.getEndTime());
+      s += c.id + "   " + int(c.getEndTime()/10);
       s += " s \n";
     }
     text(s, x, y);
     popStyle();
+  }
+  int length(){
+    return data.size();
   }
 }
 

@@ -16,10 +16,11 @@ void setup() {
   initializeKeys();
 
   tramos = new Tramos();
-  tramos.add(0, "tramoDXFnorm2.txt");
- // tramos.add(0, "1_trackUtm.txt");
+ // tramos.add(0, "tramoDXFnorm2.txt");
+  tramos.add(0, "1_trackUtm.txt");
 //  tramos.add(1, "tramoDXFnorm2.txt");
 //  tramos.add(2, "tramoDXFnorm3.txt");
+ //  tramos.add(1, "bounding.txt");
 
   cars = new Cars();
   tramos.register(cars);
@@ -30,8 +31,6 @@ void setup() {
   int f = loadSetting("focus", 0);
   f = 0;
   ref = tramos.setFocus(f);
-  
-  
 }
 
 void draw() {
@@ -46,7 +45,7 @@ void draw() {
   cars.update();
   cars.draw();
   cars.drawLoop(tramos.focus);
-  cars.sendLoop(tramos.focus);
+  //cars.sendLoop(tramos.focus);
   popMatrix();
   
  cars.displayInfo(10, 20);

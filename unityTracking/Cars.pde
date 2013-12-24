@@ -50,8 +50,9 @@ class Cars {
        solo.draw();
     else{
       for (int i = 0; i < 25; i++) {
-        if (cars[i].isActive())
+        if (cars[i].isActive()){
           cars[i].draw();
+        }
           
       }
     }

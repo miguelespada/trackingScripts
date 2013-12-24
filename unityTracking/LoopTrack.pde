@@ -23,6 +23,7 @@ class LoopPoint {
 class LoopTrack {
 
   ArrayList<LoopPoint> loopTrack;
+  ArrayList<LoopPoint> loopTrackTeorico;
   LoopPoint pos;
   Tramo tramo;
   int drawIdx = 0;
@@ -31,6 +32,8 @@ class LoopTrack {
   Car car;
   LoopTrack(Tramo t, Car c) {
     loopTrack = new ArrayList<LoopPoint>();
+    loopTrackTeorico = new ArrayList<LoopPoint>();
+   // fileName = "/Users/miguel/Desktop/Unity Tracking/tracking_frontEnd/Assets/DXF/Tramo_" + t.id + "_car_" + c.id + ".csv";
     fileName = "data/Tramo_" + t.id + "_car_" + c.id + ".csv";
     reset();
     this.tramo = t;
@@ -39,6 +42,7 @@ class LoopTrack {
 
   void reset() {
     loopTrack.clear();
+    loopTrackTeorico.clear();
     pos = new LoopPoint();
     
     output = createWriter(fileName);
@@ -65,6 +69,8 @@ class LoopTrack {
         LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
         
         for(int i = prev.idx + 1; i < pos.idx; i ++){
+          loopTrackTeorico.add(new LoopPoint(tramo.get(i), 0, 0, avg, i)); 
+
           float localDst = tramo.getDistanceFromStart(tramo.get(i)) - prev.distance;
           float localTime = (localDst/avg);
           output.println(car.id + "," +  "-" + ","
@@ -79,7 +85,7 @@ class LoopTrack {
               + tramo.get(i).y + "," 
               + int((tramo.get(i).x - tramo.getStart().x)) + "," 
               + int((tramo.get(i).y - tramo.getStart().y)) + ","
-              + "?");  
+              + "?");
         }
       }
       
@@ -96,8 +102,9 @@ class LoopTrack {
               + p.y + "," 
               + int((p.x - tramo.getStart().x)) + "," 
               + int((p.y - tramo.getStart().y)) + ","
-              + int(dstProyection));    
+              + int(dstProyection)); 
       output.flush();
+
     }
   }
 
@@ -134,23 +141,25 @@ class LoopTrack {
     return pos.time - getStartTime();
   }
   void drawLoop(int carId){
-    for(int i = 1; i < loopTrack.size(); i ++){
-      LoopPoint lp = loopTrack.get(i);
-      LoopPoint prev = loopTrack.get(i - 1);
-      float avg = (lp.distance - prev.distance)/(lp.time - prev.time);
+    for(int i = 1; i < loopTrackTeorico.size(); i ++){
+      
+      LoopPoint lp = loopTrackTeorico.get(i);
+      LoopPoint prev = loopTrackTeorico.get(i - 1);
+      float avg = lp.speed;
       int x0 = int(prev.pos.x);
       int y0 = int(prev.pos.y); 
       int x1 = int(lp.pos.x);
       int y1 = int(lp.pos.y); 
       pushStyle();
-      int r = int(map(avg, 0, 150, 50, 255));
-      strokeWeight(10);
-      stroke(r);
+      int r = int(map(exp(avg), 0, exp(40), 50, 255));
+      strokeWeight(6);
+      stroke(0, r, 0, 270);
       line(x0, y0, x1, y1);
       popStyle();
     }
   }
   void sendLoop(int carId){
+    /*
     if(frameCount % 60 != 0) return;
     if(drawIdx < loopTrack.size()){
       LoopPoint lp = loopTrack.get(drawIdx);
@@ -176,6 +185,7 @@ class LoopTrack {
                  int(lp.pos.y - tramo.getStart().y) );
       drawIdx += 1;
     }
+    */
   }
   void resetLoop(){
     drawIdx = 0;

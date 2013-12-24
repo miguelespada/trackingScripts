@@ -1,5 +1,5 @@
 int trackThreshold = 30;
-int endThreshold = 500;
+int endThreshold = 100;
 
 class TramoStatus {
   Tramo t;
@@ -13,6 +13,8 @@ class TramoStatus {
   PVector proyection, pProyection;
   int proyectionIdx, pProyectionIdx;
   LoopTrack loopTrack;
+  float error;
+  int nE;
 
   TramoStatus(Car c, Tramo t) {
     this.t = t;
@@ -32,6 +34,8 @@ class TramoStatus {
     dStart = 1000000;
     pdEnd = 1000000;
     dEnd = 1000000;
+     error = 0;
+     nE = 0;
   }
 
   int updateProyection(PVector pos) {
@@ -56,7 +60,9 @@ class TramoStatus {
   boolean updateEnd() {
     dEnd = t.distToEnd(car.pos);
 
-    if (!inTrack && running && dEnd < endThreshold) 
+    if (!inTrack 
+        && running 
+        && proyectionIdx > t.length() * 0.9) 
       return true;
     
     pdEnd = dEnd;
@@ -74,30 +80,36 @@ class TramoStatus {
     proyectionIdx = updateProyection(car.pos);
     proyection = t.get(proyectionIdx);
     
-    if (car.fresh = true && !proyection.equals(pProyection)) {
-      car.fresh = false;
-      inTrack = updateInTrack();
-      
-      if (!running) {
+    inTrack = updateInTrack();
+     if (!running) {
         running = updateStart(); 
         if (running) {
           oscSendReset(car.id);
           loopTrack.reset();
           loopTrack.add(pProyection, pProyectionIdx, car.pTime, 0, "start", car.pos.dist(proyection) );
+         
         }
       }
       
-      if(running ) 
-          loopTrack.add(proyection, proyectionIdx, car.time, car.speed, "running", car.pos.dist(proyection) );
-      
-
+      if(running ){ 
+         if(car.fresh){
+           car.fresh = false;
+           loopTrack.add(proyection, proyectionIdx, car.time, car.speed, "running", car.pos.dist(proyection) );
+           error += car.pos.dist(proyection);
+           nE += 1;
+         }
+      }
       finish = updateEnd(); 
       if (finish) {             
-        loopTrack.add("end");
+        loopTrack.add("end");    
+        error -= car.pos.dist(proyection);
+        nE -= 1;
+        println("END " + car.id + " Error: " + error/nE);
+
         inTrack = false;
         running = false;
       }
-    }
+    
   }
 
 
