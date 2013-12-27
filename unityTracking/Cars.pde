@@ -9,6 +9,7 @@ color[] carColors = {
 class Cars {
   Car cars[];
   Car solo = null;
+  
   Cars() {
     cars = new Car[N];
     for (int i = 0; i < N; i++) {
@@ -16,20 +17,15 @@ class Cars {
       cars[i].setColor(carColors[i % carColors.length]);
     }
   }
+  
   void update() {
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) 
       cars[i].update();
-    }
     updateSolo();
   }
+  
   void add(int id, float x, float y, float s, int d){
-    if(cars[id].time == d) 
-      return;
-    cars[id].fresh = true; 
-    cars[id].addPos(x, y);
-    cars[id].speed = s;
-    cars[id].pTime = cars[id].time;
-    cars[id].time = d;
+    cars[id].add(x, y, s, d);
   }
   
   void updateSolo(){
@@ -45,6 +41,7 @@ class Cars {
     }
     if(!isSolo) solo = null;
   }
+  
   void draw() {
     if(solo != null)
        solo.draw();
@@ -58,11 +55,10 @@ class Cars {
     }
   }
 
-  
-  void displayInfo(int x, int y) {
+  void displayInfo(int tramoId, int x, int y, int opacity) {
     for (int i = 0; i < 25; i++) {
       if (cars[i].isActive()) {
-        int nextY = y + cars[i].drawInfo(x, y);
+        int nextY = y + cars[i].drawInfo(tramoId, x, y, opacity);
         cars[i].drawControls(x, y);
         y = nextY;
       }
@@ -124,20 +120,23 @@ class Cars {
     oscSendActiveCars(s);
   
   }
+  
   void drawLoop(int t){
     for (int i = 0; i < 25; i++) {
         if(cars[i].isActive())
           cars[i].drawLoop(t);
     }    
   }
+  
   void sendLoop(int t){
     for (int i = 0; i < 25; i++) {
           cars[i].sendLoop(t);
     }    
   }
+  
   void resetLoop(int t){
-  for (int i = 0; i < 25; i++) 
-      cars[i].resetLoop(t);
+      for (int i = 0; i < 25; i++) 
+        cars[i].resetLoop(t);
   }
 }
 

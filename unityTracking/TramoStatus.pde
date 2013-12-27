@@ -1,5 +1,5 @@
 int trackThreshold = 30;
-int endThreshold = 100;
+int endThreshold = 1000;
 
 class TramoStatus {
   Tramo t;
@@ -59,10 +59,9 @@ class TramoStatus {
   }
   boolean updateEnd() {
     dEnd = t.distToEnd(car.pos);
-
     if (!inTrack 
         && running 
-        && proyectionIdx > t.length() * 0.9) 
+        && dEnd < endThreshold) 
       return true;
     
     pdEnd = dEnd;

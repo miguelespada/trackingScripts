@@ -29,7 +29,6 @@ class Car {
   void reset() {
     for (TramoStatus t: tramos)
       t.reset();
-    
     tracks = new PVector[M];
     fresh = false;
   }
@@ -45,6 +44,15 @@ class Car {
         t.sendCar(id, speed *1000/3600);
       }
     }
+  }
+  
+  void add(float x, float y, float s, int d){
+    if(time == d) return;
+    fresh = true; 
+    addPos(x, y);
+    speed = s;
+    pTime = time;
+    time = d;
   }
 
   void addPos(float x, float y) {
@@ -122,35 +130,42 @@ class Car {
     soloButton.mouseClicked();
   }
 
-  int drawInfo(int x, int y) {
+  int drawInfo(int tramoId, int x, int y, int opacity) {
+    TramoStatus t = null;
+    for (TramoStatus tt: tramos)  
+       if(tt.t.id == tramoId){
+         t = tt;
+         break;
+       }       
+    if(t == null)
+      return -1;
+      
     int s = 12;
     pushStyle();
     fill(255, 200);
     stroke(255);
     strokeWeight(1);
     rect(x - 5, y, ANCHO, s * 5);
-    fill(0);
+    fill(0, opacity);
     textSize(s * 0.8);
     textAlign(LEFT);
-    text("Id: " + id + " idle time: " +  int((frameCount - active)/frameRate) + " s", x, y + s);
+    text("TRAMO: " + t.t.id + " CAR: " + id + " idle time: " +  int((frameCount - active)/frameRate) + " s", x, y + s);
     text("Speed: " + int(speed) + " km/h", x, y + s * 2);
 
     String status = "";
-
-    TramoStatus t = getActiveTramo();
 
     pushStyle();
 
     float dst =  t.getDistanceFromStart();   
     if (t.finish) {
-      fill(0, 123, 0);
+      fill(0, 123, 0, opacity);
       text("Status: DONE", x, y + s * 3);
       float cTime = t.getTotalTime();
       float kmh = (dst / cTime) * 3.600;
       text("Time: " + int(cTime) + " Dist: " + int(dst) + " Avg " + int(kmh) + " km/h", x, y + s * 5);
     }
     else if (t.running) {
-      fill(0, 0, 255);
+      fill(0, 0, 255, opacity);
       text("Status: RUNNING", x, y + s * 3);
       float cTime =  t.getCurrentTime(); 
       float avgSpeedLastPeriod = t.getAvgSpeedOfLastPeriod(speed);
@@ -159,12 +174,12 @@ class Car {
       text("Time: " + int(cTime) + " Dist: " + int(dst) + " Avg " + int(kmh) + " km/h", x, y + s * 5);
     }
     else if (t.inTrack) {
-      fill(0, 255, 0);
+      fill(0, 255, 0, opacity);
       text("Status: WAITING", x, y + s * 3);
       text("time: " + 0, x, y + s * 4);
     }
     else {
-      fill(0);
+      fill(0, opacity);
       text("Status: OUT", x, y + s * 3);
     }
 
@@ -173,10 +188,12 @@ class Car {
     popStyle();
     return s*5;
   }
+  
   void registerTramo(Tramo t) {
     TramoStatus tramo = new TramoStatus(this, t);
     tramos.add(tramo);
   }
+  
   boolean inTrack() {
     for (TramoStatus t: tramos)
       if (t.inTrack) return true;
@@ -221,12 +238,14 @@ class Car {
     TramoStatus t = getActiveTramo();
     return t.getEndTime();
   }
+  
   void drawLoop(int tId){
      for (TramoStatus t: tramos)
       if (t.t.id == tId) {
         t.drawLoop();
       }
   }
+  
   void sendLoop(int tId){
      for (TramoStatus t: tramos)
       if (t.t.id == tId) {
@@ -235,7 +254,8 @@ class Car {
   }
   void resetLoop(int tId){
      for (TramoStatus t: tramos)
-      if (t.t.id == tId) t.resetLoop();
+      if (t.t.id == tId) 
+        t.resetLoop();
   }
 }  
 

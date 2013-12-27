@@ -16,8 +16,13 @@ void setup() {
   initializeKeys();
 
   tramos = new Tramos();
+  Tramo t = new Tramo(0, "1_trackUtm.txt", "splineDeformadoUTM.txt");
+  tramos.add(t);
+
+  
+  
+  
  // tramos.add(0, "tramoDXFnorm2.txt");
-  tramos.add(0, "1_trackUtm.txt");
 //  tramos.add(1, "tramoDXFnorm2.txt");
 //  tramos.add(2, "tramoDXFnorm3.txt");
  //  tramos.add(1, "bounding.txt");
@@ -39,18 +44,21 @@ void draw() {
   pushMatrix();
   scale(dZ);
   translate(dX -ref.x, dY -ref.y);
-
   strokeWeight(1/dZ);
   tramos.draw();
   cars.update();
   cars.draw();
   cars.drawLoop(tramos.focus);
-  //cars.sendLoop(tramos.focus);
   popMatrix();
   
- cars.displayInfo(10, 20);
-  tramos.drawCurrentClassification(width - 200, 20);
-  tramos.drawFinalClassification(width - 100, 20);
+  
+ cars.displayInfo(tramos.focus, 10, 20, 255);
+ 
+ tramos.drawCurrentClassification(tramos.focus, width - 200, 20);
+ tramos.drawFinalClassification(tramos.focus, width - 100, 20);
+ 
+  //cars.sendLoop(tramos.focus);
  cars.sendActiveCars(tramos.focus);
+ 
 }
 

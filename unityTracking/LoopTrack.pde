@@ -44,18 +44,14 @@ class LoopTrack {
     loopTrack.clear();
     loopTrackTeorico.clear();
     pos = new LoopPoint();
-    
-    output = createWriter(fileName);
-
-    
-    
+    output = createWriter(fileName);    
   }
  void add(String st) {
     output.println(car.id + ","  +  "*" + "," + st);
     output.flush();
-
-  output.close();
+    output.close();
  }
+ 
   void add(PVector p, int pIdx, float time, float speed, String st, float dstProyection) {
     if ((p.x != pos.pos.x && p.y != pos.pos.y) ) {
       float dst = tramo.getDistanceFromStart(p);
@@ -79,7 +75,7 @@ class LoopTrack {
               + int((localTime + prev.time - getStartTime())*10)/10.0 + "," 
               + int(avg*100)/100.0 + "," 
               + "?" + ","
-              + int((tramo.totalLength -  tramo.getDistanceFromStart(tramo.get(i)))) + ","
+              + int((tramo.getTotalLength() -  tramo.getDistanceFromStart(tramo.get(i)))) + ","
               + int(tramo.getDistanceFromStart(tramo.get(i)) ) + "," 
               + tramo.get(i).x + "," 
               + tramo.get(i).y + "," 
@@ -96,7 +92,7 @@ class LoopTrack {
               + getCurrentTime() + "," 
               + int(avg*100)/100.0 + "," 
               + (speed * 1000/3600) + ","
-              + int((tramo.totalLength - dst)) + ","
+              + int((tramo.getTotalLength() - dst)) + ","
               + int(dst) + ","
               + p.x + "," 
               + p.y + "," 

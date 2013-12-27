@@ -19,37 +19,30 @@ class TramoPoint {
     return accSpeed/n;
   }
 }
-
-class Tramo {
-
+class Track{
   ArrayList<TramoPoint> data;
   TramoPoint end, start;
-  int n;
-  int id;
-  boolean bFocus = false;
   float totalLength;
-
+  int n;
+  
   ArrayList<Car> clasification;
   ArrayList<Car> finalClasification;
-
-  Tramo(int id) {
-    this.id = id;
+  int id;
+  
+  Track(int id){
     clasification = new ArrayList<Car>();
     finalClasification = new ArrayList<Car>();
+    this.id = id;
   }
-
-  boolean inFocus() {
-    return bFocus;
-  }
-
-  void loadData(String fileName) {
+  
+  void loadData(String fileName, PVector ref) {
     String lines[] = loadStrings(fileName);
     n = lines.length;
-    data = new ArrayList<TramoPoint>();
     float dst = 0;
+    data = new ArrayList<TramoPoint>();
     for (int i = 0 ; i < n; i++) {
       String[] tokens = splitTokens(lines[i]);
-      PVector pos = new PVector(float(tokens[0]), float(tokens[1]));
+      PVector pos = new PVector(float(tokens[0]) + ref.x, float(tokens[1]) + ref.y);
       if (i > 1)
         dst += data.get(i - 1).pos.dist(pos);
       data.add(new TramoPoint(pos, dst));
@@ -60,19 +53,18 @@ class Tramo {
     }
     this.totalLength = dst;
   }
-  void draw() {
-    int opacity = 255;
-    if (!bFocus)
-      opacity = 50;
+  
+  void loadData(String fileName) {
+    loadData(fileName, new PVector(0, 0));
+  }
+  
+  void draw(int opacity) {
     for (int i = 0 ; i < n - 1; i++) {
       float x0 = data.get(i).pos.x;
       float y0 = data.get(i).pos.y;
       float x1 = data.get(i + 1).pos.x;
       float y1 = data.get(i + 1).pos.y;
-      float a = data.get(i).getAvg();
       stroke(255, opacity);
-    if (!bFocus)      stroke(255, 0, 255);
-
       point(x0, y0);
       line(x0, y0, x1, y1);
     }
@@ -84,34 +76,16 @@ class Tramo {
     noStroke();
     ellipse(end.pos.x, end.pos.y, 10, 10); 
     popStyle();
-    colorMode(RGB);
   }
-
-  void setFocus(boolean b) {
-    bFocus = b;
-  }
-
-  float getDistanceFromStart(PVector pos) {
+  
+   float getDistanceFromStart(PVector pos) {
     for (TramoPoint p: data) {
       if(p.pos.equals(pos))
         return p.dst;
     }
     return -1;
   }
-  void propagateAverages(PVector i, PVector o, float avg){
-     boolean found = false;
-     
-     for (TramoPoint p: data) {
-      if(found || p.pos.equals(i))  
-        found = true;
-      
-      if(found)
-        p.addAvg(avg);  
-      if(found && p.pos.equals(o))  
-        found = false;
-     }  
-    
-  }
+  
   PVector get(int i){
     return data.get(i).pos;
   }
@@ -201,8 +175,78 @@ class Tramo {
     text(s, x, y);
     popStyle();
   }
+  
   int length(){
     return data.size();
+  }
+}
+
+class Tramo {
+  Track utm, real;
+  int id;
+  boolean bFocus = false;
+  
+  
+  Tramo(int id, String utmFile, String realFile) {
+    this.id = id;
+    utm = new Track(id);
+    utm.loadData(utmFile);
+    
+    real = new Track(id);
+    real.loadData(realFile, utm.getStart());
+  }
+  boolean inFocus() {
+    return bFocus;
+  }
+  void setFocus(boolean b) {
+    bFocus = b;
+  }
+
+  void drawFinalClassification(int x, int y){
+    utm.drawFinalClassification(x, y);
+  }
+   void drawCurrentClassification(int x, int y) {
+    utm.drawCurrentClassification(x, y);
+   }
+   
+  void calculateFinalClassification() {
+    utm.calculateFinalClassification();
+  }
+  
+  void calculateCurrentClassification() {
+    utm.calculateCurrentClassification();
+  }
+  
+  void draw(int opacity) {
+     utm.draw(opacity);
+     real.draw(opacity / 4);
+  }
+  
+   float getDistanceFromStart(PVector pos) {
+   return utm.getDistanceFromStart(pos);
+  }
+  
+  PVector get(int i){
+      return utm.get(i);
+  }
+  
+  int getClosest(PVector pos){
+   return utm.getClosest(pos);
+  }
+  
+  float distToStart(PVector pos){
+      return utm.distToStart(pos);
+  }
+  
+  float distToEnd(PVector pos){
+    return utm.distToEnd(pos);
+  }
+  
+  PVector getStart(){
+    return utm.getStart();
+  }
+  float getTotalLength(){
+    return utm.totalLength;
   }
 }
 
