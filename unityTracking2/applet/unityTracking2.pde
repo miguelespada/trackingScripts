@@ -6,7 +6,6 @@ float dZ;
 
 Cars cars; 
 Tramos tramos;
-int focus;
 
 void setup() {
   size(800, 600);
@@ -20,13 +19,10 @@ void setup() {
   dX = loadSetting("dX", 6000);
   dY = loadSetting("dY", 7500);
   dZ = loadSetting("dZ", 0.05);
-  focus = loadSetting("focus", 0);
-  initSystem();
+  int f = loadSetting("focus", 0);
 
-}
-void initSystem(){
   tramos = new Tramos("tramos.txt");
-  ref = tramos.setFocus(focus);
+  ref = tramos.setFocus(f);
   
   cars = new Cars();
   cars.registerTramos(tramos);

@@ -21,7 +21,9 @@ void oscEvent(OscMessage theOscMessage) {
   }
   
   if (theOscMessage.checkAddrPattern("/reset")==true) {
-    initSystem();
+    cars = new Cars();
+    cars.registerTramos(tramos);
+    cars.loadCars("cars.txt");
     cars.removeLoops();
     return;
   }

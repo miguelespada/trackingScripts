@@ -61,6 +61,7 @@ class LoopTrack {
     accError = 0;
   }
   void removeData(){
+      println("aaa");
       output = createWriter(fileName + ".csv");   
       output2 = createWriter(fileName + "_interpolated.csv");     
   }
