@@ -30,6 +30,9 @@ class LoopPoint {
   float getDistanceFromStart(){
     return tramo.getDistanceFromStart(idx);
   }
+  float getRealDistanceFromStart(){
+    return tramo.getRealDistanceFromStart(getRealIndex());
+  }
 }
 
 class LoopTrack {
@@ -90,7 +93,9 @@ class LoopTrack {
   
   void writePoint(LoopPoint last){
     float error = car.dist(last.getPos());
+    
     float avg = calculateAvgSpeedOfLastPeriod();
+    
     if(last.status == "start"){
       String s = "Car Id,Tramo Id,UTM Index,REAL Index,Car Time,Speed,Status,Utm X,Utm Y,Norm X,Norm Y,Avg Speed,Track Time,Distance,Remaining Distance,Error";
       output.println(s);
@@ -128,16 +133,17 @@ class LoopTrack {
   void writeInterpolation(float avg){
     if(loopTrack.size() < 2) return;
       LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
-      for(int i = prev.idx + 1; i < last.idx; i ++){
-        float localDst = tramo.getDistanceFromStart(i) - prev.getDistanceFromStart();
+      for(int i = prev.getRealIndex() + 1; i < last.getRealIndex(); i ++){
+        float localDst = tramo.getRealDistanceFromStart(i) - prev.getRealDistanceFromStart();
         float localTime = (localDst/avg);
         float time = localTime + prev.time - loopTrack.get(0).time;
         String s = ",,,";
         s += i;
-        s += ",,,,,,,,";
+        s += ",,";
+        s += (int(avg * 10)/10.0) + ",,,,,,";
         s += "," + int(time);
-        s += "," + int(tramo.getDistanceFromStart(i));
-        s += "," + int((tramo.getTotalLength() - tramo.getDistanceFromStart(i)));
+        s += "," + int(tramo.getRealDistanceFromStart(i));
+        s += "," + int((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));
         output2.println(s);
       }
   }
@@ -165,7 +171,7 @@ class LoopTrack {
   float getDistanceFromStart() {
     if(loopTrack == null) return 0;
     if(loopTrack.size() == 0) return 0;
-    return last.getDistanceFromStart();
+    return last.getRealDistanceFromStart();
   }
    
   float getTotalTime() {
@@ -177,8 +183,8 @@ class LoopTrack {
    float calculateAvgSpeedOfLastPeriod() {
     if (loopTrack.size() > 1) {
       LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
-      if (last.time - prev.time == 0) return 0;
-      return (last.getDistanceFromStart() - prev.getDistanceFromStart())/(last.time - prev.time);
+      if (last.time == prev.time) return 0;
+      return (last.getRealDistanceFromStart() - prev.getRealDistanceFromStart())/(last.time - prev.time);
     }
     else {
       return -1;

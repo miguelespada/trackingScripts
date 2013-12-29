@@ -161,7 +161,7 @@ class Tramo {
   void draw(int opacity) {
     stroke(255, opacity);
     utm.draw();
-    stroke(255, 0, 255, opacity / 4);
+    stroke(255, 255, 0, opacity / 2);
     real.draw();
   }
 
@@ -181,6 +181,13 @@ class Tramo {
   }
   float getTotalLength() {
     return utm.getTotalLength();
+  }
+  
+  float getRealDistanceFromStart(int i) {
+    return real.getDistance(i);
+  }
+  float getRealTotalLength() {
+    return real.getTotalLength();
   }
   
   void addStart() {
