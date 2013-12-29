@@ -1,0 +1,2 @@
+tramo 0,1_trackUtm.txt,splineDeformadoUTM.txt,16,-59
+tramo 1,0_trackUtm.txt,0_trackUtm.txt,0,0

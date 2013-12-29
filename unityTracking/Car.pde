@@ -33,7 +33,8 @@ class Car {
     fresh = false;
   }
   boolean isActive() {
-    return active > 0 && int((frameCount - active)/frameRate) < 11;
+    //return active > 0 && int((frameCount - active)/frameRate) < 11;
+    return active > 0;
   }
   
   
@@ -102,10 +103,6 @@ class Car {
 
   void setColor(color c) {
     theColor = c;
-  }
-
-  float dist(PVector p) {
-    return pos.dist(p);
   }
 
   color setAlpha(int i) {
@@ -205,6 +202,7 @@ class Car {
       if (t.t.inFocus()) return t;
     return null;
   }
+  
   boolean isInTramo(int id) {
       Tramo activeTramo = getActiveTramo().t;
       return activeTramo.id == id && getActiveTramo().inTrack;

@@ -1,0 +1,12 @@
+enable_11 true
+enable_8 true
+enable_9 true
+enable_22 true
+enable_4 true
+enable_21 true
+enable_7 true
+dZ 0.11766672
+focus 0
+dY 2762.9768
+enable_3 true
+dX 2797.716
