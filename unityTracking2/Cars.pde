@@ -1,9 +1,3 @@
-color[] carColors = {
-  #FF244C, #FF24F5, #7724FF, 
-  #244AFF, #24BBFF, #24FFBF, 
-  #24FF3B, #D2FF24, #FFB624, 
-  #FF3624
-};
 
 class Cars {
   ArrayList<Car> cars;
@@ -20,7 +14,9 @@ class Cars {
          String[] tokens = splitTokens(lines[i], ",");
          int id = int(tokens[0]);
          String name = tokens[1];
+         String theColor = tokens[2];
          Car c = new Car(id, name);
+         c.setColor(theColor);
          add(c);
          println("Car added: " + name + " " + id);
       }
@@ -30,7 +26,6 @@ class Cars {
     }
   }
   void add(Car c) {
-    c.setColor(carColors[c.id % carColors.length]);
     cars.add(c);
     registerTramo(c, ts);
   }

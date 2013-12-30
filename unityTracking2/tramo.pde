@@ -18,8 +18,8 @@ class Track {
   }
 
   void loadData(String fileName, PVector ref) {
-    this.fileName = fileName;
-    String lines[] = loadStrings(fileName);
+    this.fileName = host + "Tramos/"+ fileName;
+    String lines[] = loadStrings(this.fileName);
     float dst = 0;
     data = new ArrayList<TramoPoint>();
     for (int i = 0 ; i < lines.length; i++) {
@@ -121,10 +121,17 @@ class Tramo {
   int start, end;
 
   Tramo(String name, String utmFile, String realFile, int start, int end) {
+    
+    println("Loading tramo: " +  name);
     utm = new Track();
     utm.loadData(utmFile);
+    
+    if (start < 1) start = 1;
+    if (end > -1) end = -1;
+    
     this.start = start;
     this.end = end;
+    
     
     real = new Track();
     real.loadData(realFile, utm.get(0));
@@ -202,13 +209,13 @@ class Tramo {
 
   void subStart() {
     start -= 1;
-    if (start < 0) start = 0;
+    if (start < 1) start = 1;
     setStartEnd();
   }
 
   void subEnd() {
     end += 1;
-    if (end > 0) end = 0;
+    if (end > -1) end = -1;
     setStartEnd();
   }
   String toString() {

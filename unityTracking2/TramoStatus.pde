@@ -1,5 +1,3 @@
-int trackThreshold = 30;
-int endThreshold = 1000;
 
 class TramoStatus {
   Tramo t;
@@ -100,10 +98,8 @@ class TramoStatus {
   }
   
   void loadLoop(){
-    
-    println("Reading loop: " + car.id + " tramo " + t.id);
     if(loopTrack == null) 
-          loopTrack = new LoopTrack(t, car);  
+        loopTrack = new LoopTrack(t, car);  
           
     LoopPoint last = loopTrack.loadLoop();
     if(last == null) return;

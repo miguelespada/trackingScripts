@@ -1,6 +1,4 @@
-int M = 20;
-int ANCHO = 200;
-
+int ANCHO = 220;
 
 class Car {
   color theColor;
@@ -49,8 +47,9 @@ class Car {
     idx = (idx + 1) % M;
   }
 
-  void setColor(color c) {
-    theColor = c;
+  void setColor(String c) {
+    
+    theColor = unhex("FF" + c);
   }
   
   void update(){
@@ -147,8 +146,16 @@ class Car {
     strokeWeight(1);
     rect(x - 5, y, ANCHO, s * 5);
     fill(0, opacity);
+    
+    pushStyle();
+    noStroke();
+    ellipseMode(CENTER);
+    fill(theColor);
+    ellipse(x + ANCHO - 10 , y + 7, 8, 8);
+    popStyle(); 
     textSize(s * 0.8);
     textAlign(LEFT);
+    
     text("CAR: " + name + " ID: " + id + " SPEED: " + int(speed) + " km/h" 
         + " IDLE: " 
         +  int((frameCount - lastActiveFrame)/frameRate) 

@@ -47,14 +47,13 @@ class LoopTrack {
  
    LoopTrack(Tramo t, Car c) {
     loopTrack = new ArrayList<LoopPoint>();
-    String path = "/Users/miguel/Desktop/Unity Tracking/trackingScripts/unityTracking2/";
-    fileName = "data/loops/Tramo_" + t.id + "_car_" + c.id;
+    fileName = host + "Loops/Tramo_" + t.id + "_car_" + c.id;
     this.tramo = t;
     this.car = c;
   
     try{
-      output = new PrintWriter(new FileOutputStream(new File(path + fileName + ".csv"), true)); 
-      output2 = new PrintWriter(new FileOutputStream(new File(path + fileName + "_interpolated.csv"), true)); 
+      output = new PrintWriter(new FileOutputStream(new File(fileName + ".csv"), true)); 
+      output2 = new PrintWriter(new FileOutputStream(new File(fileName + "_interpolated.csv"), true)); 
     }
     catch(FileNotFoundException e){
       println(e);
@@ -82,9 +81,9 @@ class LoopTrack {
     for (int i = 1; i < lines.length; i++) {
       String[] tokens = splitTokens(lines[i],",");
       int proyectionIndex = int(tokens[2]);
-      float time = float(tokens[3]);
-      float speed = float(tokens[4]);
-      String status = tokens[5];
+      float time = float(tokens[4]);
+      float speed = float(tokens[5]);
+      String status = tokens[6];
       last = new LoopPoint(tramo, proyectionIndex, time, speed, status);
       loopTrack.add(last);
     } 
@@ -139,8 +138,8 @@ class LoopTrack {
         float time = localTime + prev.time - loopTrack.get(0).time;
         String s = ",,,";
         s += i;
-        s += ",,";
-        s += (int(avg * 10)/10.0) + ",,,,,,";
+        s += ",," + ",,,,,,";
+        s += (int(avg * 10)/10.0);
         s += "," + int(time);
         s += "," + int(tramo.getRealDistanceFromStart(i));
         s += "," + int((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));

@@ -7,6 +7,9 @@ float dZ;
 Cars cars; 
 Tramos tramos;
 int focus;
+String host = "";
+int trackThreshold;
+int M;
 
 void setup() {
   size(800, 600);
@@ -21,16 +24,19 @@ void setup() {
   dY = loadSetting("dY", 7500);
   dZ = loadSetting("dZ", 0.05);
   focus = loadSetting("focus", 0);
+  host = loadSetting("host", "");
+  trackThreshold = loadSetting("trackThreshold", 30);
+  M = loadSetting("estela", 10);
   initSystem();
 
 }
 void initSystem(){
-  tramos = new Tramos("tramos.txt");
+  tramos = new Tramos(host + "Tramos/tramos.txt");
   ref = tramos.setFocus(focus);
   
   cars = new Cars();
   cars.registerTramos(tramos);
-  cars.loadCars("cars.txt");
+  cars.loadCars(host + "Cars/cars.txt");
   cars.loadLoops();
 }
 
