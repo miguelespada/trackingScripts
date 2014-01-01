@@ -14,4 +14,7 @@ void mouseDragged() {
     }
   }
 }
+void mouseClicked(){
+   cars.mouseClicked(); 
+}
 

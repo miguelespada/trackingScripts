@@ -10,14 +10,16 @@ int focus;
 String host = "";
 int trackThreshold;
 int M;
+PrintWriter logFile;
 
 void setup() {
+
+
   size(800, 600);
   frameRate(30);
   smooth();
   loadSettings();
 
-  setupOsc();
   initializeKeys();
   
   dX = loadSetting("dX", 6000);
@@ -27,10 +29,21 @@ void setup() {
   host = loadSetting("host", "");
   trackThreshold = loadSetting("trackThreshold", 30);
   M = loadSetting("estela", 10);
+  
+  try{
+  logFile = new PrintWriter(new FileOutputStream(new File(host + "tracking.log"), true), true); 
+  }
+  catch(Exception e){}
+  logFile.println("--- new sesion --- "); 
+  
   initSystem();
-
+  
+ 
 }
 void initSystem(){
+  
+  setupOsc();
+  
   tramos = new Tramos(host + "Tramos/tramos.txt");
   ref = tramos.setFocus(focus);
   
@@ -54,6 +67,8 @@ void draw() {
   popMatrix();
  
   cars.displayInfo(tramos.focus, 10, 20, 255);
+  cars.drawCurrentClassification(focus, width - 200, 20);
+  cars.drawFinalClassification(focus, width - 100, 20);
 
 }
 

@@ -1,0 +1,2 @@
+tramo0,/Applications/MAMP/htdocs/unity/Tramos/1_trackUtm.txt,/Applications/MAMP/htdocs/unity/Tramos/1_trackReal.txt,16,-59
+tramo1,/Applications/MAMP/htdocs/unity/Tramos/0_trackUtm.txt,/Applications/MAMP/htdocs/unity/Tramos/0_trackUtm.txt,1,-1

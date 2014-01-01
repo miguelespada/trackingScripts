@@ -122,7 +122,7 @@ class Tramo {
 
   Tramo(String name, String utmFile, String realFile, int start, int end) {
     
-    println("Loading tramo: " +  name);
+    logFile.println("Loading tramo: " +  name);
     utm = new Track();
     utm.loadData(utmFile);
     

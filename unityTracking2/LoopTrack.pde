@@ -140,7 +140,7 @@ class LoopTrack {
         s += i;
         s += ",," + ",,,,,,";
         s += (int(avg * 10)/10.0);
-        s += "," + int(time);
+        s += "," + (int(time * 10) /10.0);
         s += "," + int(tramo.getRealDistanceFromStart(i));
         s += "," + int((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));
         output2.println(s);

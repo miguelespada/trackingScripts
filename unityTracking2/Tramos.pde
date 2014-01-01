@@ -13,6 +13,7 @@ class Tramos {
     String lines[] = loadStrings(fileName);
     try{
       for (int i = 0 ; i < lines.length; i++) {
+         lines[i] = lines[i].replace(" ", "");
          String[] tokens = splitTokens(lines[i], ",");
          String tramoName = tokens[0];
          String utm = tokens[1];
@@ -20,11 +21,11 @@ class Tramos {
          int start = int(tokens[3]);
          int end = -abs(int(tokens[4]));
          add(new Tramo(tramoName, utm, real, start, end));
-         
+         logFile.println("Tramo added: " + tramoName);
       }
     }
     catch(Exception e){
-      println("ERROR: reading tramos");
+      logFile.println("ERROR: reading tramos");
     }
    
   }

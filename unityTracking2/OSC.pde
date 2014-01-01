@@ -4,6 +4,7 @@ OscP5 oscP5;
 
 void setupOsc() {
   oscP5 = new OscP5(this, 12000);
+  logFile.println("OSC listening on port " + 12000);
 }
 
 

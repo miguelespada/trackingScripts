@@ -4,7 +4,7 @@
 from ttk import *
 from Tkinter import *
 import xml.etree.ElementTree as ET
-import sys
+import sys,os
 import dateutil.parser
 import OSC
 
@@ -114,6 +114,10 @@ class myFrame(Frame):
             command=self.onReset)
         resetButton.pack(side=RIGHT, padx=5, pady=5)
 
+        vizButton = Button(self, text="Visual",
+            command=self.onOpenViz)
+        vizButton.pack(side=RIGHT, padx=5, pady=5)
+
         self.lb = Listbox(self.frame, relief = RAISED,width= 40, selectmode=MULTIPLE, exportselection=0)
         self.lb.pack(fill=Y, side=LEFT,  padx=5, pady=5)  
 
@@ -127,7 +131,7 @@ class myFrame(Frame):
         self.lFrequency = Listbox(self.frame, width= 20, relief = RAISED, exportselection=0)
         self.lFrequency.pack(side=TOP, padx=5, pady=5) 
         self.lFrequency.bind("<<ListboxSelect>>", self.onSelectFrequency)   
-        freqs = [100, 500, 1000, 3000, 10000]
+        freqs = [0, 100, 500, 1000, 3000, 10000]
         for f in freqs: 
             self.lFrequency.insert(END, f)   
         
@@ -214,8 +218,9 @@ class myFrame(Frame):
     def onReset(self):
         self.gps.reset()
 
-    def onJump(self):
-        self.gps.jump(160)
+
+    def onOpenViz(self):
+        os.system('open unityTracking2.app')
 
 def sendOsc(data):
     msg = OSC.OSCMessage()
@@ -249,15 +254,18 @@ def main():
     ex.registerGPS(gps)
 
     def readData():
-        vehicles = gps.pullData()
-        ex.setListData(vehicles, gps)
-        selected = ex.getSelectedString()
-        ex.setLog("Current track: " + str(gps.i))
-        for s in selected:
-            data = gps.getVehicleNavigationData(s)
-            if data[3] == 'WRC':
-                sendOsc(data)
-        root.after(delay,readData)  
+        if delay == 0:
+            root.after(1000,readData)
+        else:  
+            vehicles = gps.pullData()
+            ex.setListData(vehicles, gps)
+            selected = ex.getSelectedString()
+            ex.setLog("Current track: " + str(gps.i))
+            for s in selected:
+                data = gps.getVehicleNavigationData(s)
+                if data[3] == 'WRC':
+                    sendOsc(data)
+            root.after(delay,readData)  
 
     root.after(1,readData)
     root.mainloop()  

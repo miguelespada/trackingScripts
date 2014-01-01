@@ -43,6 +43,13 @@ void keyPressed() {
        println("Loading loops..."); 
     }
     
+    if (key == 'a'){
+       if(keyCodes[SHIFT])
+         cars.disable();
+       else 
+         cars.enable();
+    }
+    
   }
 }
 void keyReleased() {
