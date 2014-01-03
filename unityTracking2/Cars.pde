@@ -158,7 +158,7 @@ class Cars {
       int i = 0;
       float d = c.getTotalTime(tramoId);
       while (i < classification.size ()) {
-        if (d >= classification.get(i).getTotalTime(tramoId))
+        if (d < classification.get(i).getTotalTime(tramoId))
           break;
         else
           i ++;

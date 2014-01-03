@@ -30,19 +30,20 @@ void setup() {
   trackThreshold = loadSetting("trackThreshold", 30);
   M = loadSetting("estela", 10);
   
+  
   try{
   logFile = new PrintWriter(new FileOutputStream(new File(host + "tracking.log"), true), true); 
   }
   catch(Exception e){}
   logFile.println("--- new sesion --- "); 
   
+  setupOsc();
   initSystem();
   
  
 }
 void initSystem(){
   
-  setupOsc();
   
   tramos = new Tramos(host + "Tramos/tramos.txt");
   ref = tramos.setFocus(focus);

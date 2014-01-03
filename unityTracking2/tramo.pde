@@ -101,12 +101,17 @@ class Track {
   PVector get(int i) {
     return data.get(i).pos;
   }
-  float getDistance(int i) {
-    return data.get(i).dst;
-  }
 
   int size() {
     return data.size();
+  }
+  
+  float getDistance(int i) {
+    return data.get(i).dst;
+  }
+  
+  float getDistanceFromStart(int i) {
+    return data.get(i).dst - start.dst;
   }
   float getTotalLength() {
     return end.dst - start.dst;
@@ -183,15 +188,9 @@ class Tramo {
   int getRealIndex(int idx){
     return real.getClosest(utm.get(idx));
   }
-  float getDistanceFromStart(int i) {
-    return utm.getDistance(i);
-  }
-  float getTotalLength() {
-    return utm.getTotalLength();
-  }
   
   float getRealDistanceFromStart(int i) {
-    return real.getDistance(i);
+    return real.getDistanceFromStart(i);
   }
   float getRealTotalLength() {
     return real.getTotalLength();
@@ -221,10 +220,20 @@ class Tramo {
   String toString() {
     return name + "," + utm.fileName + "," + real.fileName + "," + start + "," + end;
   }
-   int getEndIndex(){
+  
+  int getEndIndex(){
     return utm.getEndIndex();
   }
+  
   int getStartIndex(){
+    return utm.getStartIndex();
+  }
+  
+   int getRealEndIndex(){
+    return real.getEndIndex();
+  }
+  
+  int getRealStartIndex(){
     return utm.getStartIndex();
   }
 

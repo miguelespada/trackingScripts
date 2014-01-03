@@ -27,9 +27,6 @@ class LoopPoint {
   int getRealIndex(){
     return tramo.getRealIndex(idx);
   }
-  float getDistanceFromStart(){
-    return tramo.getDistanceFromStart(idx);
-  }
   float getRealDistanceFromStart(){
     return tramo.getRealDistanceFromStart(getRealIndex());
   }
@@ -107,7 +104,7 @@ class LoopTrack {
     s += "," + int(avg * 10) / 10.0;
     s += "," + int(getTotalTime());
     s += "," + int(getDistanceFromStart());
-    s += "," + int((tramo.getTotalLength() - getDistanceFromStart()));
+    s += "," + int((tramo.getRealTotalLength() - getDistanceFromStart()));
     s += "," + int(error);
    
     if(last.status == "running")
@@ -131,11 +128,27 @@ class LoopTrack {
 
   void writeInterpolation(float avg){
     if(loopTrack.size() < 2) return;
-      LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
+      LoopPoint prev = loopTrack.get(loopTrack.size() - 2); 
+      
+      boolean started = true;
+      if(prev.status.equals("start"))
+        started = false;
+        
       for(int i = prev.getRealIndex() + 1; i < last.getRealIndex(); i ++){
+        if(tramo.getRealDistanceFromStart(i) < 0){
+          continue;
+        }
+         
         float localDst = tramo.getRealDistanceFromStart(i) - prev.getRealDistanceFromStart();
         float localTime = (localDst/avg);
         float time = localTime + prev.time - loopTrack.get(0).time;
+        
+        if(!started){ 
+           loopTrack.get(0).time += time; //encendemos el cronómetro
+           time = 0;
+           started = true;
+        }
+        
         String s = ",,,";
         s += i;
         s += ",," + ",,,,,,";
@@ -144,6 +157,11 @@ class LoopTrack {
         s += "," + int(tramo.getRealDistanceFromStart(i));
         s += "," + int((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));
         output2.println(s);
+        
+        if(i >= tramo.getRealEndIndex()){
+          last.time = time + loopTrack.get(0).time; //apagamos el cronometro
+          break; 
+        }
       }
   }
 
@@ -177,6 +195,7 @@ class LoopTrack {
     if(loopTrack == null) return 0;
     if(loopTrack.size() == 0) return 0;
     return last.time - loopTrack.get(0).time;
+    //return lastCalculatedTime - firstCalculatedTime;
   }
     
    float calculateAvgSpeedOfLastPeriod() {
