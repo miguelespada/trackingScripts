@@ -189,7 +189,7 @@ class Cars {
     textSize(10);
     String s = "" ;
     for (Car c: classification) {
-      s += c.id + "   " + int(c.getTotalTime(tramoId));
+      s += c.id + "   " + int(c.getTotalTime(tramoId) * 10) /10.0;
       s += " s \n";
     }
     text(s, x, y);
