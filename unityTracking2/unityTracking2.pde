@@ -39,6 +39,7 @@ void setup() {
   
   setupOsc();
   initSystem();
+  setupMySQL();
   
  
 }

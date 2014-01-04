@@ -13,7 +13,7 @@ class LoopPoint {
     this.tramo = t;
   }
   String toString(){
-      String s = idx + "," + getRealIndex() + "," + int(time) + "," + (int(speed * 10) /10.0) + "," + status + "," 
+      String s = idx + "," + getRealIndex() + "," + int(time) + "," + (int(speed * 10) /10.0) + ",'" + status + "'," 
                 + int(getPos().x) + "," + int(getPos().y) 
                 + "," + int((getPos().x - ref.x)) 
                 + "," + int((getPos().y - ref.y));
@@ -35,7 +35,6 @@ class LoopPoint {
 class LoopTrack {
 
   ArrayList<LoopPoint> loopTrack; 
-  PrintWriter output, output2;
   String fileName;
   Car car;
   Tramo tramo;
@@ -48,20 +47,10 @@ class LoopTrack {
     this.tramo = t;
     this.car = c;
   
-    try{
-      output = new PrintWriter(new FileOutputStream(new File(fileName + ".csv"), true)); 
-      output2 = new PrintWriter(new FileOutputStream(new File(fileName + "_interpolated.csv"), true)); 
-    }
-    catch(FileNotFoundException e){
-      println(e);
-      output = createWriter(fileName + ".csv");   
-      output2 = createWriter(fileName + "_interpolated.csv");    
-    }
     accError = 0;
   }
   void removeData(){
-      output = createWriter(fileName + ".csv");   
-      output2 = createWriter(fileName + "_interpolated.csv");     
+    removeMySQL();
   }
   
   void add(int proyectionIndex, float time, float speed, String status) {
@@ -92,11 +81,6 @@ class LoopTrack {
     
     float avg = calculateAvgSpeedOfLastPeriod();
     
-    if(last.status == "start"){
-      String s = "Car Id,Tramo Id,UTM Index,REAL Index,Car Time,Speed,Status,Utm X,Utm Y,Norm X,Norm Y,Avg Speed,Track Time,Distance,Remaining Distance,Error";
-      output.println(s);
-      output2.println(s);
-    }
     String s = "";
     s += car.id;
     s += "," + tramo.id;
@@ -109,20 +93,11 @@ class LoopTrack {
    
     if(last.status == "running")
       accError += error;
+    
+    insertMySQL(s);
      
-    output.println(s);
     
     writeInterpolation(avg);
-    output2.println(s);
-    
-    output.flush();
-    output2.flush();
-    
-    if(last.status == "ended"){
-      output.close();
-      output2.close();
-      //println(car.id + " ERROR: " + accError / (loopTrack.size() - 2));
-    }
   }
   
 
@@ -149,15 +124,14 @@ class LoopTrack {
            started = true;
         }
         
-        String s = ",,,";
-        s += i;
-        s += ",," + ",,,,,,";
-        s += (int(avg * 10)/10.0);
+        String s = car.id + "," + tramo.id ; 
+        s += "," + i;
+        s += "," + (int(avg * 10)/10.0);
         s += "," + (int(time * 10) /10.0);
         s += "," + int(tramo.getRealDistanceFromStart(i));
         s += "," + int((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));
-        output2.println(s);
-        
+        insertMySQL2(s);
+
         if(i >= tramo.getRealEndIndex()){
           last.time = time + loopTrack.get(0).time; //apagamos el cronometro
           break; 
@@ -195,7 +169,6 @@ class LoopTrack {
     if(loopTrack == null) return 0;
     if(loopTrack.size() == 0) return 0;
     return last.time - loopTrack.get(0).time;
-    //return lastCalculatedTime - firstCalculatedTime;
   }
     
    float calculateAvgSpeedOfLastPeriod() {
