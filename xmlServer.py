@@ -7,6 +7,10 @@ import xml.etree.ElementTree as ET
 import sys,os
 import dateutil.parser
 import OSC
+import _mysql
+
+con = _mysql.connect('127.0.0.1', 'miguel', 'miguel', 'unity', 8889)
+
 
 delay = 1000
 gps = None
@@ -22,6 +26,7 @@ class GPS:
 
     def reset(self):
         self.i = self.I
+        con.query("DELETE FROM data WHERE 1")
         sendOscReset()
     
     def jump(self, v):
@@ -29,10 +34,11 @@ class GPS:
         sendOscReset()
 
     def parseGps(self):
+        global delay
         theFile = self.path + "gps" + str(self.i) + ".xml"
         self.i += 1
         if self.i == self.O:
-            #self.i = self.I
+            delay = 0
             self.i -= 1
             #sendOscReset()
         tree = ET.parse(theFile)
@@ -71,8 +77,8 @@ class GPS:
         state =  result.find('fleet').text
         speed =  result.find('speed').text
         time =  result.find('date').text
-        return value, northing, easting, state, speed, time
-
+        d = int(value), float(northing), float(easting), float(speed), (int(time) / 1000) % 10000, state
+        return d
     def getVehicleStatus(self, value):
         query = ".//tracking[vehicle='" + value +"']"
         result = self.data.findall(query)[0]
@@ -223,18 +229,10 @@ class myFrame(Frame):
         os.system('open unityTracking2.app')
 
 def sendOsc(data):
-    msg = OSC.OSCMessage()
-    msg.setAddress("/car")
-    msg.append(int(data[0]))
-    msg.append(float(data[1]))
-    msg.append(float(data[2]))
-    msg.append(float(data[4]))
-    msg.append((int(data[5]) / 1000) % 10000)
-    try:
-        client.sendto(msg, ('localhost', 12000)) # note that the second arg is a tupple and not two arguments
-    except Exception as e:
-        print e
-
+    s = "INSERT INTO data(carId, x, y, speed, time) VALUES (%d, %.2f, %.2f, %.2f, %d)" % data[0:5]
+    print s
+    con.query(s)
+    
 def sendOscReset():
     msg = OSC.OSCMessage()
     msg.setAddress("/reset")
@@ -263,7 +261,7 @@ def main():
             ex.setLog("Current track: " + str(gps.i))
             for s in selected:
                 data = gps.getVehicleNavigationData(s)
-                if data[3] == 'WRC':
+                if data[-1] == 'WRC':
                     sendOsc(data)
             root.after(delay,readData)  
 

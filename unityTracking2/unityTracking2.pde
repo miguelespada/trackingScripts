@@ -56,6 +56,8 @@ void initSystem(){
 }
 
 void draw() {
+  selectMySQL();
+    
   background(0);
   stroke(255);
   pushMatrix();

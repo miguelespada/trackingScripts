@@ -20,3 +20,21 @@ void insertMySQL2(String s){
 void removeMySQL(){
    msql.query("DELETE FROM tracks WHERE 1");   
 }
+
+void selectMySQL(){
+  
+  msql.query( "SELECT * FROM data WHERE processed = 0 order by id LIMIT 1");
+  while (msql.next())
+   {
+    int id = msql.getInt("id"); 
+    int carId= msql.getInt("carId"); 
+    float x = msql.getFloat("x"); 
+    float y = msql.getFloat("y"); 
+    float speed = msql.getFloat("speed"); 
+    int time =  msql.getInt("time"); 
+    cars.addData(carId, x, y, speed, time);
+    msql.query( "UPDATE data SET processed = 1 WHERE id ="+ str(id));
+    msql.query( "SELECT * FROM data WHERE processed = 0 order by id LIMIT 1");
+  }
+
+}
