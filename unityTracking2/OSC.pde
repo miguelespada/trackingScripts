@@ -12,7 +12,7 @@ void oscEvent(OscMessage theOscMessage) {
   
   if (theOscMessage.checkAddrPattern("/reset")==true) {
     initSystem();
-    cars.removeLoops();
+    removeMySQL();
     return;
   }
   

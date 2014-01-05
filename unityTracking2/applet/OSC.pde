@@ -1,29 +1,17 @@
 import oscP5.*;
 import netP5.*;
 OscP5 oscP5;
-NetAddress myRemoteLocation;
 
 void setupOsc() {
   oscP5 = new OscP5(this, 12000);
-  myRemoteLocation = new NetAddress("127.0.0.1", 12001);
+  logFile.println("OSC listening on port " + 12000);
 }
 
 
 void oscEvent(OscMessage theOscMessage) {
-  if (theOscMessage.checkAddrPattern("/car")==true) {
-    int id = theOscMessage.get(0).intValue();
-    float x = int(theOscMessage.get(1).floatValue()); 
-    float y = int(theOscMessage.get(2).floatValue()); 
-    float s = theOscMessage.get(3).floatValue() ;
-    int d = theOscMessage.get(4).intValue();
-    cars.addData(id, x, y, s, d);
-    return;
-  }
   
   if (theOscMessage.checkAddrPattern("/reset")==true) {
-    cars = new Cars();
-    cars.registerTramos(tramos);
-    cars.loadCars("cars.txt");
+    initSystem();
     cars.removeLoops();
     return;
   }

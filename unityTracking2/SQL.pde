@@ -20,21 +20,37 @@ void insertMySQL2(String s){
 void removeMySQL(){
    msql.query("DELETE FROM tracks WHERE 1");   
 }
+void clearMySQL(){
+   msql.query("UPDATE data SET processed = 0 WHERE processed = 1");   
+}
 
-void selectMySQL(){
-  
-  msql.query( "SELECT * FROM data WHERE processed = 0 order by id LIMIT 1");
+class sqlData{
+  int id;
+  int carId;
+  float x, y;
+  float speed;
+  int time;
+  sqlData(){
+  }
+}
+
+void processSQL(){
+  msql.query( "SELECT * FROM data WHERE processed = 0 order by id");
+  ArrayList<sqlData> data = new ArrayList<sqlData>();
   while (msql.next())
    {
-    int id = msql.getInt("id"); 
-    int carId= msql.getInt("carId"); 
-    float x = msql.getFloat("x"); 
-    float y = msql.getFloat("y"); 
-    float speed = msql.getFloat("speed"); 
-    int time =  msql.getInt("time"); 
-    cars.addData(carId, x, y, speed, time);
-    msql.query( "UPDATE data SET processed = 1 WHERE id ="+ str(id));
-    msql.query( "SELECT * FROM data WHERE processed = 0 order by id LIMIT 1");
+    sqlData s = new sqlData();
+    s.id = msql.getInt("id"); 
+    s.carId= msql.getInt("carId"); 
+    s.x = msql.getFloat("x"); 
+    s.y = msql.getFloat("y"); 
+    s.speed = msql.getFloat("speed"); 
+    s.time =  msql.getInt("time"); 
+    data.add(s);
   }
-
+  for(sqlData s: data){
+    println("Processing... " + s.id);
+    cars.addData(s.carId, s.x, s.y, s.speed, s.time);
+    msql.execute( "UPDATE data SET processed = 1 WHERE id ="+ str(s.id));
+  }
 }

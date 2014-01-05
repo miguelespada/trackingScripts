@@ -1,6 +1,5 @@
-int M = 20;
-int ANCHO = 200;
-
+int ANCHO = 220;
+int ALTO = 55;
 
 class Car {
   color theColor;
@@ -14,6 +13,8 @@ class Car {
   int lastActiveFrame;
   boolean fresh;
   String name;
+  int x, y;
+  boolean enabled = true;
   
   ArrayList<TramoStatus> tramos;
 
@@ -49,8 +50,9 @@ class Car {
     idx = (idx + 1) % M;
   }
 
-  void setColor(color c) {
-    theColor = c;
+  void setColor(String c) {
+    
+    theColor = unhex("FF" + c);
   }
   
   void update(){
@@ -71,7 +73,9 @@ class Car {
         line(pos0.x, pos0.y, pos1.x, pos1.y);
     }
    
+    
     fill(theColor);
+    if(!enabled) fill(theColor, 100);
     if (inTrack()) stroke(255);
     else noStroke();
 
@@ -98,6 +102,19 @@ class Car {
     return this.pos.dist(p);
   }
   
+  boolean isInTramo(int tramoId){
+    for (TramoStatus t: tramos){
+      if (t.inTrack && t.t.id == tramoId) return true;
+    }
+    return false;
+  }
+  boolean finished(int tramoId){
+    for (TramoStatus t: tramos){
+      if (t.finish && t.t.id == tramoId) return true;
+    }
+    return false;
+  }
+  
   boolean inTrack() {
     for (TramoStatus t: tramos)
       if (t.inTrack) return true;
@@ -112,7 +129,6 @@ class Car {
     for (TramoStatus tt: tramos)  
        if(tt.getId() == id)
          return tt;
-       
     return null;
   }
   
@@ -123,11 +139,7 @@ class Car {
         t.drawLoop();
     } 
   }
-  void loadLoops(){
-    for(TramoStatus t: tramos){
-      t.loadLoop();
-    }
-  }
+ 
   void removeLoops(){
     for(TramoStatus t: tramos){
       t.removeLoop();
@@ -135,24 +147,38 @@ class Car {
   }
   
   int drawInfo(int tramoId, int x, int y, int opacity) {
-    TramoStatus t = getTramoStatus(tramoId);
+    this.x = x;
+    this.y = y;
+    int s = ALTO/5;
     
+    TramoStatus t = getTramoStatus(tramoId);
+    int idle = int((frameCount - lastActiveFrame)/frameRate);
     
     if(t == null)
       return -1;
-    int s = 11;
     pushStyle();
-    fill(255, 200);
-    stroke(255);
-    strokeWeight(1);
-    rect(x - 5, y, ANCHO, s * 5);
+    
+    
+    fill(255 - constrain((idle * 3), 0, 100), 200);
+      
+    stroke(theColor);
+    strokeWeight(2);
+    rect(x - 5, y, ANCHO, ALTO-4);
     fill(0, opacity);
+    
+    pushStyle();
+    noStroke();
+    ellipseMode(CENTER);
+    if(enabled) 
+      fill(0, 255, 0);
+    else
+      fill(255, 0, 0);
+    ellipse(x + ANCHO - 10 , y + 7, 8, 8);
+    popStyle(); 
     textSize(s * 0.8);
     textAlign(LEFT);
-    text("CAR: " + name + " ID: " + id + " SPEED: " + int(speed) + " km/h" 
-        + " IDLE: " 
-        +  int((frameCount - lastActiveFrame)/frameRate) 
-        + " s", x, y + s);
+    
+    text("CAR: " + name + " ID: " + id + " SPEED: " + int(speed) + "km/h", x, y + s);
      
     pushStyle();
    
@@ -188,10 +214,41 @@ class Car {
   
     popStyle();
     
-    return s*5;
-   
+    return ALTO;
   }
         
+   void mouseClicked() {
+     if(mouseX > x && mouseX < x + ANCHO && 
+       mouseY > y && mouseY < y + ALTO){
+          enabled = !enabled;
+     }
+   }
+   String toString(){
+     
+     String s = "";
+     s += str(id) + ",";
+     s += name + ",";
+     s += hex(theColor).substring(2,8) + ",";
+     if(enabled)
+       s += "1";
+     else
+       s += "0";
+     return s;
+   }
+   float getDistanceFromStart(int tramoId){
+      for (TramoStatus t: tramos){
+        if(t.t.id == tramoId)
+          return t.getDistanceFromStart();
+      }
+      return -1;
+   }
+    float getTotalTime(int tramoId){
+      for (TramoStatus t: tramos){
+        if(t.t.id == tramoId)
+          return t.getTotalTime();
+      }
+      return -1;
+   }
 
 
 }  

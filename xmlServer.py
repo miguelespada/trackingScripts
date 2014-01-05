@@ -120,9 +120,14 @@ class myFrame(Frame):
             command=self.onReset)
         resetButton.pack(side=RIGHT, padx=5, pady=5)
 
-        vizButton = Button(self, text="Visual",
-            command=self.onOpenViz)
-        vizButton.pack(side=RIGHT, padx=5, pady=5)
+
+        clearButton = Button(self, text="Clear",
+            command=self.onClear)
+        clearButton.pack(side=RIGHT, padx=5, pady=5)
+
+        # vizButton = Button(self, text="Visual",
+        #     command=self.onOpenViz)
+        # vizButton.pack(side=RIGHT, padx=5, pady=5)
 
         self.lb = Listbox(self.frame, relief = RAISED,width= 40, selectmode=MULTIPLE, exportselection=0)
         self.lb.pack(fill=Y, side=LEFT,  padx=5, pady=5)  
@@ -223,6 +228,10 @@ class myFrame(Frame):
 
     def onReset(self):
         self.gps.reset()
+
+    def onClear(self):
+        print "clearing..."
+        con.query("UPDATE data SET processed = 0 WHERE processed = 1")
 
 
     def onOpenViz(self):

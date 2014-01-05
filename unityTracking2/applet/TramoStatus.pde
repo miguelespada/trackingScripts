@@ -1,5 +1,3 @@
-int trackThreshold = 30;
-int endThreshold = 1000;
 
 class TramoStatus {
   Tramo t;
@@ -99,35 +97,7 @@ class TramoStatus {
     return loopTrack.getTotalTime();
   }
   
-  void loadLoop(){
-    
-    println("Reading loop: " + car.id + " tramo " + t.id);
-    if(loopTrack == null) 
-          loopTrack = new LoopTrack(t, car);  
-          
-    LoopPoint last = loopTrack.loadLoop();
-    if(last == null) return;
-    
-    if(last.status.equals("running")){
-      inTrack = true;
-      running = true;
-      finish = false;
-    }
-    if(last.status.equals("start")){
-      inTrack = true;
-      running = true;
-      finish = false;
-    }
-    if(last.status.equals("ended")){
-      finish = true;
-      inTrack = false;
-      running = false;
-    }
-    proyection = last.idx;
-    car.time = last.time;
-    car.speed = last.speed;
-    car.pos = t.getUtmPoint(proyection);
-  }
+  
 
   void removeLoop(){
      if(loopTrack != null) 

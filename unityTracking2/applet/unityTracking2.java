@@ -3,6 +3,7 @@ import processing.xml.*;
 
 import oscP5.*; 
 import netP5.*; 
+import de.bezier.data.sql.*; 
 
 import java.applet.*; 
 import java.awt.Dimension; 
@@ -28,31 +29,57 @@ float dZ;
 
 Cars cars; 
 Tramos tramos;
+int focus;
+String host = "";
+int trackThreshold;
+int M;
+PrintWriter logFile;
 
 public void setup() {
+
+
   size(800, 600);
   frameRate(30);
   smooth();
   loadSettings();
 
-  setupOsc();
   initializeKeys();
   
   dX = loadSetting("dX", 6000);
   dY = loadSetting("dY", 7500);
   dZ = loadSetting("dZ", 0.05f);
-  int f = loadSetting("focus", 0);
-
-  tramos = new Tramos("tramos.txt");
-  ref = tramos.setFocus(f);
+  focus = loadSetting("focus", 0);
+  host = loadSetting("host", "");
+  trackThreshold = loadSetting("trackThreshold", 30);
+  M = loadSetting("estela", 10);
+  
+  
+  try{
+  logFile = new PrintWriter(new FileOutputStream(new File(host + "tracking.log"), true), true); 
+  }
+  catch(Exception e){}
+  logFile.println("--- new sesion --- "); 
+  
+  setupOsc();
+  initSystem();
+  setupMySQL();
+  
+ 
+}
+public void initSystem(){
+  
+  
+  tramos = new Tramos(host + "Tramos/tramos.txt");
+  ref = tramos.setFocus(focus);
   
   cars = new Cars();
   cars.registerTramos(tramos);
-  cars.loadCars("cars.txt");
-  cars.loadLoops();
+  cars.loadCars(host + "Cars/cars.txt");
 }
 
 public void draw() {
+  processSQL();
+  
   background(0);
   stroke(255);
   pushMatrix();
@@ -66,12 +93,13 @@ public void draw() {
   popMatrix();
  
   cars.displayInfo(tramos.focus, 10, 20, 255);
+  cars.drawCurrentClassification(focus, width - 200, 20);
+  cars.drawFinalClassification(focus, width - 100, 20);
 
 }
 
-int M = 20;
-int ANCHO = 200;
-
+int ANCHO = 220;
+int ALTO = 55;
 
 class Car {
   int theColor;
@@ -85,6 +113,8 @@ class Car {
   int lastActiveFrame;
   boolean fresh;
   String name;
+  int x, y;
+  boolean enabled = true;
   
   ArrayList<TramoStatus> tramos;
 
@@ -120,8 +150,9 @@ class Car {
     idx = (idx + 1) % M;
   }
 
-  public void setColor(int c) {
-    theColor = c;
+  public void setColor(String c) {
+    
+    theColor = unhex("FF" + c);
   }
   
   public void update(){
@@ -142,7 +173,9 @@ class Car {
         line(pos0.x, pos0.y, pos1.x, pos1.y);
     }
    
+    
     fill(theColor);
+    if(!enabled) fill(theColor, 100);
     if (inTrack()) stroke(255);
     else noStroke();
 
@@ -169,6 +202,19 @@ class Car {
     return this.pos.dist(p);
   }
   
+  public boolean isInTramo(int tramoId){
+    for (TramoStatus t: tramos){
+      if (t.inTrack && t.t.id == tramoId) return true;
+    }
+    return false;
+  }
+  public boolean finished(int tramoId){
+    for (TramoStatus t: tramos){
+      if (t.finish && t.t.id == tramoId) return true;
+    }
+    return false;
+  }
+  
   public boolean inTrack() {
     for (TramoStatus t: tramos)
       if (t.inTrack) return true;
@@ -183,7 +229,6 @@ class Car {
     for (TramoStatus tt: tramos)  
        if(tt.getId() == id)
          return tt;
-       
     return null;
   }
   
@@ -194,11 +239,7 @@ class Car {
         t.drawLoop();
     } 
   }
-  public void loadLoops(){
-    for(TramoStatus t: tramos){
-      t.loadLoop();
-    }
-  }
+ 
   public void removeLoops(){
     for(TramoStatus t: tramos){
       t.removeLoop();
@@ -206,24 +247,38 @@ class Car {
   }
   
   public int drawInfo(int tramoId, int x, int y, int opacity) {
-    TramoStatus t = getTramoStatus(tramoId);
+    this.x = x;
+    this.y = y;
+    int s = ALTO/5;
     
+    TramoStatus t = getTramoStatus(tramoId);
+    int idle = PApplet.parseInt((frameCount - lastActiveFrame)/frameRate);
     
     if(t == null)
       return -1;
-    int s = 11;
     pushStyle();
-    fill(255, 200);
-    stroke(255);
-    strokeWeight(1);
-    rect(x - 5, y, ANCHO, s * 5);
+    
+    
+    fill(255 - constrain((idle * 3), 0, 100), 200);
+      
+    stroke(theColor);
+    strokeWeight(2);
+    rect(x - 5, y, ANCHO, ALTO-4);
     fill(0, opacity);
+    
+    pushStyle();
+    noStroke();
+    ellipseMode(CENTER);
+    if(enabled) 
+      fill(0, 255, 0);
+    else
+      fill(255, 0, 0);
+    ellipse(x + ANCHO - 10 , y + 7, 8, 8);
+    popStyle(); 
     textSize(s * 0.8f);
     textAlign(LEFT);
-    text("CAR: " + name + " ID: " + id + " SPEED: " + PApplet.parseInt(speed) + " km/h" 
-        + " IDLE: " 
-        +  PApplet.parseInt((frameCount - lastActiveFrame)/frameRate) 
-        + " s", x, y + s);
+    
+    text("CAR: " + name + " ID: " + id + " SPEED: " + PApplet.parseInt(speed) + "km/h", x, y + s);
      
     pushStyle();
    
@@ -259,47 +314,89 @@ class Car {
   
     popStyle();
     
-    return s*5;
-   
+    return ALTO;
   }
         
+   public void mouseClicked() {
+     if(mouseX > x && mouseX < x + ANCHO && 
+       mouseY > y && mouseY < y + ALTO){
+          enabled = !enabled;
+     }
+   }
+   public String toString(){
+     
+     String s = "";
+     s += str(id) + ",";
+     s += name + ",";
+     s += hex(theColor).substring(2,8) + ",";
+     if(enabled)
+       s += "1";
+     else
+       s += "0";
+     return s;
+   }
+   public float getDistanceFromStart(int tramoId){
+      for (TramoStatus t: tramos){
+        if(t.t.id == tramoId)
+          return t.getDistanceFromStart();
+      }
+      return -1;
+   }
+    public float getTotalTime(int tramoId){
+      for (TramoStatus t: tramos){
+        if(t.t.id == tramoId)
+          return t.getTotalTime();
+      }
+      return -1;
+   }
 
 
 }  
 
-int[] carColors = {
-  0xffFF244C, 0xffFF24F5, 0xff7724FF, 
-  0xff244AFF, 0xff24BBFF, 0xff24FFBF, 
-  0xff24FF3B, 0xffD2FF24, 0xffFFB624, 
-  0xffFF3624
-};
 
 class Cars {
   ArrayList<Car> cars;
   Tramos ts; 
-
+  String fileName;
   Cars() {
     cars = new ArrayList<Car>();
     
   }
   public void loadCars(String fileName){
+    this.fileName = fileName;
     String lines[] = loadStrings(fileName);
     try{
       for (int i = 0 ; i < lines.length; i++) {
+         lines[i] = lines[i].replace(" ", "");
          String[] tokens = splitTokens(lines[i], ",");
          int id = PApplet.parseInt(tokens[0]);
          String name = tokens[1];
+         String theColor = tokens[2];
+         int enabled = PApplet.parseInt(tokens[3]);
          Car c = new Car(id, name);
+         c.setColor(theColor);
          add(c);
-         println("Car added: " + name + " " + id);
+         if(enabled == 1) 
+           c.enabled = true;
+         else
+           c.enabled = false;
+         logFile.println("Car added: " + name + " " + id);
       }
     }
     catch(Exception e){
-      println("ERROR: reading cars");
+      logFile.println("ERROR: reading cars");
     }
   }
+  public void writeCars(){
+    PrintWriter output = createWriter(fileName);  
+    for (Car c: cars){
+        String s = c.toString();
+        output.println(s);
+     }
+     output.close();
+  
+  }
   public void add(Car c) {
-    c.setColor(carColors[c.id % carColors.length]);
     cars.add(c);
     registerTramo(c, ts);
   }
@@ -346,15 +443,108 @@ class Cars {
      for (Car c: cars)
        c.drawLoop();
   }
-  public void loadLoops(){
-    for(Car c: cars){
-      c.loadLoops();
-    }
-  }
+
   public void removeLoops(){
     for(Car c: cars)
       c.removeLoops();
     
+  }
+  public void mouseClicked() {
+    for(Car c: cars)
+      c.mouseClicked();
+    writeCars();
+  }
+  
+  public void enable() {
+    for(Car c: cars)
+      c.enabled = true;
+    writeCars();
+  }
+  
+  public void disable() {
+    for(Car c: cars)
+      c.enabled = false;
+    writeCars();
+  }
+  
+  
+  public ArrayList<Car> getRunningCars(int tramoId) {
+    ArrayList<Car> active = new ArrayList<Car>();
+    for (Car c: cars) {
+      if (c.isInTramo(tramoId))
+        active.add(c);
+    }
+    return active;
+  }
+   public ArrayList<Car> getFinalizedCars(int tramoId) {
+    ArrayList<Car> active = new ArrayList<Car>();
+    for (Car c: cars) {
+      if (c.finished(tramoId))
+        active.add(c);
+    }
+    return active;
+  }  
+  public ArrayList<Car> calculateCurrentClassification(int tramoId) {
+    ArrayList<Car> activeCars = getRunningCars(tramoId);
+    ArrayList<Car> classification = new ArrayList<Car>();
+    
+    for (Car c: activeCars) {
+      int i = 0;
+      float d = c.getDistanceFromStart(tramoId);
+      while (i < classification.size ()) {
+        if (d > classification.get(i).getDistanceFromStart(tramoId))
+          break;
+        else
+          i ++;
+      }
+      classification.add(i, c);
+    }
+    return classification;
+  }
+   public ArrayList<Car> calculateFinalClassification(int tramoId) {
+    ArrayList<Car> activeCars = getFinalizedCars(tramoId);
+    ArrayList<Car> classification = new ArrayList<Car>();
+    
+    for (Car c: activeCars) {
+      int i = 0;
+      float d = c.getTotalTime(tramoId);
+      while (i < classification.size ()) {
+        if (d < classification.get(i).getTotalTime(tramoId))
+          break;
+        else
+          i ++;
+      }
+      classification.add(i, c);
+    }
+    return classification;
+  }
+  public void drawCurrentClassification(int tramoId, int x, int y) {
+    ArrayList<Car> classification = calculateCurrentClassification(tramoId);
+    pushStyle();
+    stroke(255);
+    fill(255);
+    textSize(10);
+    String s = "" ;
+    for (Car c: classification) {
+      s += c.id + "   " + PApplet.parseInt(c.getDistanceFromStart(tramoId));
+      s += " m \n";
+    }
+    text(s, x, y);
+    popStyle();
+  }
+   public void drawFinalClassification(int tramoId, int x, int y) {
+    ArrayList<Car> classification = calculateFinalClassification(tramoId);
+    pushStyle();
+    stroke(255);
+    fill(255);
+    textSize(10);
+    String s = "" ;
+    for (Car c: classification) {
+      s += c.id + "   " + PApplet.parseInt(c.getTotalTime(tramoId) * 10) /10.0f;
+      s += " s \n";
+    }
+    text(s, x, y);
+    popStyle();
   }
 }
 
@@ -373,7 +563,7 @@ class LoopPoint {
     this.tramo = t;
   }
   public String toString(){
-      String s = idx + "," + getRealIndex() + "," + PApplet.parseInt(time) + "," + (PApplet.parseInt(speed * 10) /10.0f) + "," + status + "," 
+      String s = idx + "," + getRealIndex() + "," + PApplet.parseInt(time) + "," + (PApplet.parseInt(speed * 10) /10.0f) + ",'" + status + "'," 
                 + PApplet.parseInt(getPos().x) + "," + PApplet.parseInt(getPos().y) 
                 + "," + PApplet.parseInt((getPos().x - ref.x)) 
                 + "," + PApplet.parseInt((getPos().y - ref.y));
@@ -387,15 +577,14 @@ class LoopPoint {
   public int getRealIndex(){
     return tramo.getRealIndex(idx);
   }
-  public float getDistanceFromStart(){
-    return tramo.getDistanceFromStart(idx);
+  public float getRealDistanceFromStart(){
+    return tramo.getRealDistanceFromStart(getRealIndex());
   }
 }
 
 class LoopTrack {
 
   ArrayList<LoopPoint> loopTrack; 
-  PrintWriter output, output2;
   String fileName;
   Car car;
   Tramo tramo;
@@ -404,26 +593,14 @@ class LoopTrack {
  
    LoopTrack(Tramo t, Car c) {
     loopTrack = new ArrayList<LoopPoint>();
-    String path = "/Users/miguel/Desktop/Unity Tracking/trackingScripts/unityTracking2/";
-    fileName = "data/loops/Tramo_" + t.id + "_car_" + c.id;
+    fileName = host + "Loops/Tramo_" + t.id + "_car_" + c.id;
     this.tramo = t;
     this.car = c;
   
-    try{
-      output = new PrintWriter(new FileOutputStream(new File(path + fileName + ".csv"), true)); 
-      output2 = new PrintWriter(new FileOutputStream(new File(path + fileName + "_interpolated.csv"), true)); 
-    }
-    catch(FileNotFoundException e){
-      println(e);
-      output = createWriter(fileName + ".csv");   
-      output2 = createWriter(fileName + "_interpolated.csv");    
-    }
     accError = 0;
   }
   public void removeData(){
-      println("aaa");
-      output = createWriter(fileName + ".csv");   
-      output2 = createWriter(fileName + "_interpolated.csv");     
+    removeMySQL();
   }
   
   public void add(int proyectionIndex, float time, float speed, String status) {
@@ -433,30 +610,13 @@ class LoopTrack {
     writePoint(last); 
   }
   
-  public LoopPoint loadLoop(){
-    String lines[] = loadStrings(fileName + ".csv");
-    if (lines.length == 0)
-      return null;
-    for (int i = 1; i < lines.length; i++) {
-      String[] tokens = splitTokens(lines[i],",");
-      int proyectionIndex = PApplet.parseInt(tokens[2]);
-      float time = PApplet.parseFloat(tokens[3]);
-      float speed = PApplet.parseFloat(tokens[4]);
-      String status = tokens[5];
-      last = new LoopPoint(tramo, proyectionIndex, time, speed, status);
-      loopTrack.add(last);
-    } 
-    return last;
-  }
+  
   
   public void writePoint(LoopPoint last){
     float error = car.dist(last.getPos());
+    
     float avg = calculateAvgSpeedOfLastPeriod();
-    if(last.status == "start"){
-      String s = "Car Id,Tramo Id,UTM Index,REAL Index,Car Time,Speed,Status,Utm X,Utm Y,Norm X,Norm Y,Avg Speed,Track Time,Distance,Remaining Distance,Error";
-      output.println(s);
-      output2.println(s);
-    }
+    
     String s = "";
     s += car.id;
     s += "," + tramo.id;
@@ -464,42 +624,54 @@ class LoopTrack {
     s += "," + PApplet.parseInt(avg * 10) / 10.0f;
     s += "," + PApplet.parseInt(getTotalTime());
     s += "," + PApplet.parseInt(getDistanceFromStart());
-    s += "," + PApplet.parseInt((tramo.getTotalLength() - getDistanceFromStart()));
+    s += "," + PApplet.parseInt((tramo.getRealTotalLength() - getDistanceFromStart()));
     s += "," + PApplet.parseInt(error);
    
     if(last.status == "running")
       accError += error;
+    
+    insertMySQL(s);
      
-    output.println(s);
     
     writeInterpolation(avg);
-    output2.println(s);
-    
-    output.flush();
-    output2.flush();
-    
-    if(last.status == "ended"){
-      output.close();
-      output2.close();
-      //println(car.id + " ERROR: " + accError / (loopTrack.size() - 2));
-    }
   }
   
 
   public void writeInterpolation(float avg){
     if(loopTrack.size() < 2) return;
-      LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
-      for(int i = prev.idx + 1; i < last.idx; i ++){
-        float localDst = tramo.getDistanceFromStart(i) - prev.getDistanceFromStart();
+      LoopPoint prev = loopTrack.get(loopTrack.size() - 2); 
+      
+      boolean started = true;
+      if(prev.status.equals("start"))
+        started = false;
+        
+      for(int i = prev.getRealIndex() + 1; i < last.getRealIndex(); i ++){
+        if(tramo.getRealDistanceFromStart(i) < 0){
+          continue;
+        }
+         
+        float localDst = tramo.getRealDistanceFromStart(i) - prev.getRealDistanceFromStart();
         float localTime = (localDst/avg);
         float time = localTime + prev.time - loopTrack.get(0).time;
-        String s = ",,,";
-        s += i;
-        s += ",,,,,,,,";
-        s += "," + PApplet.parseInt(time);
-        s += "," + PApplet.parseInt(tramo.getDistanceFromStart(i));
-        s += "," + PApplet.parseInt((tramo.getTotalLength() - tramo.getDistanceFromStart(i)));
-        output2.println(s);
+        
+        if(!started){ 
+           loopTrack.get(0).time += time; //encendemos el cron\u00f3metro
+           time = 0;
+           started = true;
+        }
+        
+        String s = car.id + "," + tramo.id ; 
+        s += "," + i;
+        s += "," + (PApplet.parseInt(avg * 10)/10.0f);
+        s += "," + (PApplet.parseInt(time * 10) /10.0f);
+        s += "," + PApplet.parseInt(tramo.getRealDistanceFromStart(i));
+        s += "," + PApplet.parseInt((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));
+        insertMySQL2(s);
+
+        if(i >= tramo.getRealEndIndex()){
+          last.time = time + loopTrack.get(0).time; //apagamos el cronometro
+          break; 
+        }
       }
   }
 
@@ -526,7 +698,7 @@ class LoopTrack {
   public float getDistanceFromStart() {
     if(loopTrack == null) return 0;
     if(loopTrack.size() == 0) return 0;
-    return last.getDistanceFromStart();
+    return last.getRealDistanceFromStart();
   }
    
   public float getTotalTime() {
@@ -538,8 +710,8 @@ class LoopTrack {
    public float calculateAvgSpeedOfLastPeriod() {
     if (loopTrack.size() > 1) {
       LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
-      if (last.time - prev.time == 0) return 0;
-      return (last.getDistanceFromStart() - prev.getDistanceFromStart())/(last.time - prev.time);
+      if (last.time == prev.time) return 0;
+      return (last.getRealDistanceFromStart() - prev.getRealDistanceFromStart())/(last.time - prev.time);
     }
     else {
       return -1;
@@ -555,35 +727,63 @@ class LoopTrack {
 
 
 OscP5 oscP5;
-NetAddress myRemoteLocation;
 
 public void setupOsc() {
   oscP5 = new OscP5(this, 12000);
-  myRemoteLocation = new NetAddress("127.0.0.1", 12001);
+  logFile.println("OSC listening on port " + 12000);
 }
 
 
 public void oscEvent(OscMessage theOscMessage) {
-  if (theOscMessage.checkAddrPattern("/car")==true) {
-    int id = theOscMessage.get(0).intValue();
-    float x = PApplet.parseInt(theOscMessage.get(1).floatValue()); 
-    float y = PApplet.parseInt(theOscMessage.get(2).floatValue()); 
-    float s = theOscMessage.get(3).floatValue() ;
-    int d = theOscMessage.get(4).intValue();
-    cars.addData(id, x, y, s, d);
-    return;
-  }
   
   if (theOscMessage.checkAddrPattern("/reset")==true) {
-    cars = new Cars();
-    cars.registerTramos(tramos);
-    cars.loadCars("cars.txt");
+    initSystem();
     cars.removeLoops();
     return;
   }
   
   println("### received an osc message. with address pattern "+
     theOscMessage.addrPattern()+" typetag "+ theOscMessage.typetag());
+}
+
+
+MySQL msql;
+public void setupMySQL()
+{
+    String user     = "miguel";
+    String pass     = "miguel";
+    String database = "unity";
+    msql = new MySQL( this, "localhost:8889", database, user, pass );
+    msql.connect();
+}
+
+public void insertMySQL(String s){
+   msql.query("INSERT INTO tracks VALUES (" + s  + ")");   
+}
+public void insertMySQL2(String s){
+   msql.query("INSERT INTO tracks (CarId, TramoId, realIndex, avgSpeed, trackTime, trackDistance, remainingDistance) VALUES (" + s  + ")");   
+}
+
+public void removeMySQL(){
+   msql.query("DELETE FROM tracks WHERE 1");   
+}
+
+public void processSQL(){
+  msql.query( "SELECT * FROM data WHERE processed = 0 order by id LIMIT 1");
+  while (msql.next())
+   {
+    int id = msql.getInt("id"); 
+    int carId= msql.getInt("carId"); 
+    float x = msql.getFloat("x"); 
+    float y = msql.getFloat("y"); 
+    float speed = msql.getFloat("speed"); 
+    int time =  msql.getInt("time"); 
+    cars.addData(carId, x, y, speed, time);
+    println("Processing... " + id);
+    msql.execute( "UPDATE data SET processed = 1 WHERE id ="+ str(id));
+    break;
+  }
+
 }
 String settingsFile = "mySettings.txt";
 HashMap settings = new HashMap();
@@ -650,8 +850,6 @@ public void saveSettings() {
   output.close();
 }
 
-int trackThreshold = 30;
-int endThreshold = 1000;
 
 class TramoStatus {
   Tramo t;
@@ -751,35 +949,7 @@ class TramoStatus {
     return loopTrack.getTotalTime();
   }
   
-  public void loadLoop(){
-    
-    println("Reading loop: " + car.id + " tramo " + t.id);
-    if(loopTrack == null) 
-          loopTrack = new LoopTrack(t, car);  
-          
-    LoopPoint last = loopTrack.loadLoop();
-    if(last == null) return;
-    
-    if(last.status.equals("running")){
-      inTrack = true;
-      running = true;
-      finish = false;
-    }
-    if(last.status.equals("start")){
-      inTrack = true;
-      running = true;
-      finish = false;
-    }
-    if(last.status.equals("ended")){
-      finish = true;
-      inTrack = false;
-      running = false;
-    }
-    proyection = last.idx;
-    car.time = last.time;
-    car.speed = last.speed;
-    car.pos = t.getUtmPoint(proyection);
-  }
+  
 
   public void removeLoop(){
      if(loopTrack != null) 
@@ -803,6 +973,7 @@ class Tramos {
     String lines[] = loadStrings(fileName);
     try{
       for (int i = 0 ; i < lines.length; i++) {
+         lines[i] = lines[i].replace(" ", "");
          String[] tokens = splitTokens(lines[i], ",");
          String tramoName = tokens[0];
          String utm = tokens[1];
@@ -810,11 +981,11 @@ class Tramos {
          int start = PApplet.parseInt(tokens[3]);
          int end = -abs(PApplet.parseInt(tokens[4]));
          add(new Tramo(tramoName, utm, real, start, end));
-         
+         logFile.println("Tramo added: " + tramoName);
       }
     }
     catch(Exception e){
-      println("ERROR: reading tramos");
+      logFile.println("ERROR: reading tramos");
     }
    
   }
@@ -930,9 +1101,12 @@ public void keyPressed() {
       ref = tramos.nextFocus();
       saveSetting("focus", tramos.focus);
     }
-    if (key == 'l'){
-       cars.loadLoops();
-       println("Loading loops..."); 
+    
+    if (key == 'a'){
+       if(keyCodes[SHIFT])
+         cars.disable();
+       else 
+         cars.enable();
     }
     
   }
@@ -963,6 +1137,9 @@ public void mouseDragged() {
     }
   }
 }
+public void mouseClicked(){
+   cars.mouseClicked(); 
+}
 
 class TramoPoint {
   PVector pos;
@@ -984,8 +1161,8 @@ class Track {
   }
 
   public void loadData(String fileName, PVector ref) {
-    this.fileName = fileName;
-    String lines[] = loadStrings(fileName);
+    this.fileName = host + "Tramos/"+ fileName;
+    String lines[] = loadStrings(this.fileName);
     float dst = 0;
     data = new ArrayList<TramoPoint>();
     for (int i = 0 ; i < lines.length; i++) {
@@ -1067,12 +1244,17 @@ class Track {
   public PVector get(int i) {
     return data.get(i).pos;
   }
-  public float getDistance(int i) {
-    return data.get(i).dst;
-  }
 
   public int size() {
     return data.size();
+  }
+  
+  public float getDistance(int i) {
+    return data.get(i).dst;
+  }
+  
+  public float getDistanceFromStart(int i) {
+    return data.get(i).dst - start.dst;
   }
   public float getTotalLength() {
     return end.dst - start.dst;
@@ -1087,10 +1269,17 @@ class Tramo {
   int start, end;
 
   Tramo(String name, String utmFile, String realFile, int start, int end) {
+    
+    logFile.println("Loading tramo: " +  name);
     utm = new Track();
     utm.loadData(utmFile);
+    
+    if (start < 1) start = 1;
+    if (end > -1) end = -1;
+    
     this.start = start;
     this.end = end;
+    
     
     real = new Track();
     real.loadData(realFile, utm.get(0));
@@ -1127,7 +1316,7 @@ class Tramo {
   public void draw(int opacity) {
     stroke(255, opacity);
     utm.draw();
-    stroke(255, 0, 255, opacity / 4);
+    stroke(255, 255, 0, opacity / 2);
     real.draw();
   }
 
@@ -1142,11 +1331,12 @@ class Tramo {
   public int getRealIndex(int idx){
     return real.getClosest(utm.get(idx));
   }
-  public float getDistanceFromStart(int i) {
-    return utm.getDistance(i);
+  
+  public float getRealDistanceFromStart(int i) {
+    return real.getDistanceFromStart(i);
   }
-  public float getTotalLength() {
-    return utm.getTotalLength();
+  public float getRealTotalLength() {
+    return real.getTotalLength();
   }
   
   public void addStart() {
@@ -1161,22 +1351,32 @@ class Tramo {
 
   public void subStart() {
     start -= 1;
-    if (start < 0) start = 0;
+    if (start < 1) start = 1;
     setStartEnd();
   }
 
   public void subEnd() {
     end += 1;
-    if (end > 0) end = 0;
+    if (end > -1) end = -1;
     setStartEnd();
   }
   public String toString() {
     return name + "," + utm.fileName + "," + real.fileName + "," + start + "," + end;
   }
-   public int getEndIndex(){
+  
+  public int getEndIndex(){
     return utm.getEndIndex();
   }
+  
   public int getStartIndex(){
+    return utm.getStartIndex();
+  }
+  
+   public int getRealEndIndex(){
+    return real.getEndIndex();
+  }
+  
+  public int getRealStartIndex(){
     return utm.getStartIndex();
   }
 

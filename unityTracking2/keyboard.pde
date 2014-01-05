@@ -11,7 +11,7 @@ void initializeKeys() {
   }
 }
 void keyPressed() {
-
+  lastActivity  =millis();
   if (key == CODED && keyCode >=0 && keyCode < 255) {
     keyCodes[keyCode] = true;
     if (keyCode == UP) {
@@ -38,10 +38,6 @@ void keyPressed() {
       ref = tramos.nextFocus();
       saveSetting("focus", tramos.focus);
     }
-    if (key == 'l'){
-       cars.loadLoops();
-       println("Loading loops..."); 
-    }
     
     if (key == 'a'){
        if(keyCodes[SHIFT])
@@ -49,7 +45,11 @@ void keyPressed() {
        else 
          cars.enable();
     }
-    
+    if(key == 'r'){
+      initSystem();
+      clearMySQL();
+      removeMySQL();
+    }
   }
 }
 void keyReleased() {

@@ -18,8 +18,8 @@ class Track {
   }
 
   void loadData(String fileName, PVector ref) {
-    this.fileName = fileName;
-    String lines[] = loadStrings(fileName);
+    this.fileName = host + "Tramos/"+ fileName;
+    String lines[] = loadStrings(this.fileName);
     float dst = 0;
     data = new ArrayList<TramoPoint>();
     for (int i = 0 ; i < lines.length; i++) {
@@ -101,12 +101,17 @@ class Track {
   PVector get(int i) {
     return data.get(i).pos;
   }
-  float getDistance(int i) {
-    return data.get(i).dst;
-  }
 
   int size() {
     return data.size();
+  }
+  
+  float getDistance(int i) {
+    return data.get(i).dst;
+  }
+  
+  float getDistanceFromStart(int i) {
+    return data.get(i).dst - start.dst;
   }
   float getTotalLength() {
     return end.dst - start.dst;
@@ -121,10 +126,17 @@ class Tramo {
   int start, end;
 
   Tramo(String name, String utmFile, String realFile, int start, int end) {
+    
+    logFile.println("Loading tramo: " +  name);
     utm = new Track();
     utm.loadData(utmFile);
+    
+    if (start < 1) start = 1;
+    if (end > -1) end = -1;
+    
     this.start = start;
     this.end = end;
+    
     
     real = new Track();
     real.loadData(realFile, utm.get(0));
@@ -161,7 +173,7 @@ class Tramo {
   void draw(int opacity) {
     stroke(255, opacity);
     utm.draw();
-    stroke(255, 0, 255, opacity / 4);
+    stroke(255, 255, 0, opacity / 2);
     real.draw();
   }
 
@@ -176,11 +188,12 @@ class Tramo {
   int getRealIndex(int idx){
     return real.getClosest(utm.get(idx));
   }
-  float getDistanceFromStart(int i) {
-    return utm.getDistance(i);
+  
+  float getRealDistanceFromStart(int i) {
+    return real.getDistanceFromStart(i);
   }
-  float getTotalLength() {
-    return utm.getTotalLength();
+  float getRealTotalLength() {
+    return real.getTotalLength();
   }
   
   void addStart() {
@@ -195,22 +208,32 @@ class Tramo {
 
   void subStart() {
     start -= 1;
-    if (start < 0) start = 0;
+    if (start < 1) start = 1;
     setStartEnd();
   }
 
   void subEnd() {
     end += 1;
-    if (end > 0) end = 0;
+    if (end > -1) end = -1;
     setStartEnd();
   }
   String toString() {
     return name + "," + utm.fileName + "," + real.fileName + "," + start + "," + end;
   }
-   int getEndIndex(){
+  
+  int getEndIndex(){
     return utm.getEndIndex();
   }
+  
   int getStartIndex(){
+    return utm.getStartIndex();
+  }
+  
+   int getRealEndIndex(){
+    return real.getEndIndex();
+  }
+  
+  int getRealStartIndex(){
     return utm.getStartIndex();
   }
 

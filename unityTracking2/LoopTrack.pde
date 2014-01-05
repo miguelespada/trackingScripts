@@ -49,9 +49,6 @@ class LoopTrack {
   
     accError = 0;
   }
-  void removeData(){
-    removeMySQL();
-  }
   
   void add(int proyectionIndex, float time, float speed, String status) {
     speed = speed * 1000/3600;
@@ -60,21 +57,7 @@ class LoopTrack {
     writePoint(last); 
   }
   
-  LoopPoint loadLoop(){
-    String lines[] = loadStrings(fileName + ".csv");
-    if (lines.length == 0)
-      return null;
-    for (int i = 1; i < lines.length; i++) {
-      String[] tokens = splitTokens(lines[i],",");
-      int proyectionIndex = int(tokens[2]);
-      float time = float(tokens[4]);
-      float speed = float(tokens[5]);
-      String status = tokens[6];
-      last = new LoopPoint(tramo, proyectionIndex, time, speed, status);
-      loopTrack.add(last);
-    } 
-    return last;
-  }
+  
   
   void writePoint(LoopPoint last){
     float error = car.dist(last.getPos());

@@ -6,31 +6,57 @@ float dZ;
 
 Cars cars; 
 Tramos tramos;
+int focus;
+String host = "";
+int trackThreshold;
+int M;
+PrintWriter logFile;
 
 void setup() {
+
+
   size(800, 600);
   frameRate(30);
   smooth();
   loadSettings();
 
-  setupOsc();
   initializeKeys();
   
   dX = loadSetting("dX", 6000);
   dY = loadSetting("dY", 7500);
   dZ = loadSetting("dZ", 0.05);
-  int f = loadSetting("focus", 0);
-
-  tramos = new Tramos("tramos.txt");
-  ref = tramos.setFocus(f);
+  focus = loadSetting("focus", 0);
+  host = loadSetting("host", "");
+  trackThreshold = loadSetting("trackThreshold", 30);
+  M = loadSetting("estela", 10);
+  
+  
+  try{
+  logFile = new PrintWriter(new FileOutputStream(new File(host + "tracking.log"), true), true); 
+  }
+  catch(Exception e){}
+  logFile.println("--- new sesion --- "); 
+  
+  setupOsc();
+  initSystem();
+  setupMySQL();
+  
+ 
+}
+void initSystem(){
+  
+  
+  tramos = new Tramos(host + "Tramos/tramos.txt");
+  ref = tramos.setFocus(focus);
   
   cars = new Cars();
   cars.registerTramos(tramos);
-  cars.loadCars("cars.txt");
-  cars.loadLoops();
+  cars.loadCars(host + "Cars/cars.txt");
 }
 
 void draw() {
+  processSQL();
+  
   background(0);
   stroke(255);
   pushMatrix();
@@ -44,6 +70,8 @@ void draw() {
   popMatrix();
  
   cars.displayInfo(tramos.focus, 10, 20, 255);
+  cars.drawCurrentClassification(focus, width - 200, 20);
+  cars.drawFinalClassification(focus, width - 100, 20);
 
 }
 

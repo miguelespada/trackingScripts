@@ -88,16 +88,7 @@ class Cars {
      for (Car c: cars)
        c.drawLoop();
   }
-  void loadLoops(){
-    for(Car c: cars){
-      c.loadLoops();
-    }
-  }
-  void removeLoops(){
-    for(Car c: cars)
-      c.removeLoops();
-    
-  }
+
   void mouseClicked() {
     for(Car c: cars)
       c.mouseClicked();

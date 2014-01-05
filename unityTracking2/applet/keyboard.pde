@@ -38,9 +38,12 @@ void keyPressed() {
       ref = tramos.nextFocus();
       saveSetting("focus", tramos.focus);
     }
-    if (key == 'l'){
-       cars.loadLoops();
-       println("Loading loops..."); 
+    
+    if (key == 'a'){
+       if(keyCodes[SHIFT])
+         cars.disable();
+       else 
+         cars.enable();
     }
     
   }

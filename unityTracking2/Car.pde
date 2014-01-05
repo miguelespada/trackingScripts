@@ -42,6 +42,7 @@ class Car {
     speed = s;
     pTime = time;
     time = t;
+    update();
   }
 
   void addPos(float x, float y) {
@@ -139,16 +140,7 @@ class Car {
         t.drawLoop();
     } 
   }
-  void loadLoops(){
-    for(TramoStatus t: tramos){
-      t.loadLoop();
-    }
-  }
-  void removeLoops(){
-    for(TramoStatus t: tramos){
-      t.removeLoop();
-    }
-  }
+ 
   
   int drawInfo(int tramoId, int x, int y, int opacity) {
     this.x = x;

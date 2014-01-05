@@ -13,7 +13,7 @@ class LoopPoint {
     this.tramo = t;
   }
   String toString(){
-      String s = idx + "," + getRealIndex() + "," + int(time) + "," + (int(speed * 10) /10.0) + "," + status + "," 
+      String s = idx + "," + getRealIndex() + "," + int(time) + "," + (int(speed * 10) /10.0) + ",'" + status + "'," 
                 + int(getPos().x) + "," + int(getPos().y) 
                 + "," + int((getPos().x - ref.x)) 
                 + "," + int((getPos().y - ref.y));
@@ -27,15 +27,14 @@ class LoopPoint {
   int getRealIndex(){
     return tramo.getRealIndex(idx);
   }
-  float getDistanceFromStart(){
-    return tramo.getDistanceFromStart(idx);
+  float getRealDistanceFromStart(){
+    return tramo.getRealDistanceFromStart(getRealIndex());
   }
 }
 
 class LoopTrack {
 
   ArrayList<LoopPoint> loopTrack; 
-  PrintWriter output, output2;
   String fileName;
   Car car;
   Tramo tramo;
@@ -44,26 +43,14 @@ class LoopTrack {
  
    LoopTrack(Tramo t, Car c) {
     loopTrack = new ArrayList<LoopPoint>();
-    String path = "/Users/miguel/Desktop/Unity Tracking/trackingScripts/unityTracking2/";
-    fileName = "data/loops/Tramo_" + t.id + "_car_" + c.id;
+    fileName = host + "Loops/Tramo_" + t.id + "_car_" + c.id;
     this.tramo = t;
     this.car = c;
   
-    try{
-      output = new PrintWriter(new FileOutputStream(new File(path + fileName + ".csv"), true)); 
-      output2 = new PrintWriter(new FileOutputStream(new File(path + fileName + "_interpolated.csv"), true)); 
-    }
-    catch(FileNotFoundException e){
-      println(e);
-      output = createWriter(fileName + ".csv");   
-      output2 = createWriter(fileName + "_interpolated.csv");    
-    }
     accError = 0;
   }
   void removeData(){
-      println("aaa");
-      output = createWriter(fileName + ".csv");   
-      output2 = createWriter(fileName + "_interpolated.csv");     
+    removeMySQL();
   }
   
   void add(int proyectionIndex, float time, float speed, String status) {
@@ -73,30 +60,13 @@ class LoopTrack {
     writePoint(last); 
   }
   
-  LoopPoint loadLoop(){
-    String lines[] = loadStrings(fileName + ".csv");
-    if (lines.length == 0)
-      return null;
-    for (int i = 1; i < lines.length; i++) {
-      String[] tokens = splitTokens(lines[i],",");
-      int proyectionIndex = int(tokens[2]);
-      float time = float(tokens[3]);
-      float speed = float(tokens[4]);
-      String status = tokens[5];
-      last = new LoopPoint(tramo, proyectionIndex, time, speed, status);
-      loopTrack.add(last);
-    } 
-    return last;
-  }
+  
   
   void writePoint(LoopPoint last){
     float error = car.dist(last.getPos());
+    
     float avg = calculateAvgSpeedOfLastPeriod();
-    if(last.status == "start"){
-      String s = "Car Id,Tramo Id,UTM Index,REAL Index,Car Time,Speed,Status,Utm X,Utm Y,Norm X,Norm Y,Avg Speed,Track Time,Distance,Remaining Distance,Error";
-      output.println(s);
-      output2.println(s);
-    }
+    
     String s = "";
     s += car.id;
     s += "," + tramo.id;
@@ -104,42 +74,54 @@ class LoopTrack {
     s += "," + int(avg * 10) / 10.0;
     s += "," + int(getTotalTime());
     s += "," + int(getDistanceFromStart());
-    s += "," + int((tramo.getTotalLength() - getDistanceFromStart()));
+    s += "," + int((tramo.getRealTotalLength() - getDistanceFromStart()));
     s += "," + int(error);
    
     if(last.status == "running")
       accError += error;
+    
+    insertMySQL(s);
      
-    output.println(s);
     
     writeInterpolation(avg);
-    output2.println(s);
-    
-    output.flush();
-    output2.flush();
-    
-    if(last.status == "ended"){
-      output.close();
-      output2.close();
-      //println(car.id + " ERROR: " + accError / (loopTrack.size() - 2));
-    }
   }
   
 
   void writeInterpolation(float avg){
     if(loopTrack.size() < 2) return;
-      LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
-      for(int i = prev.idx + 1; i < last.idx; i ++){
-        float localDst = tramo.getDistanceFromStart(i) - prev.getDistanceFromStart();
+      LoopPoint prev = loopTrack.get(loopTrack.size() - 2); 
+      
+      boolean started = true;
+      if(prev.status.equals("start"))
+        started = false;
+        
+      for(int i = prev.getRealIndex() + 1; i < last.getRealIndex(); i ++){
+        if(tramo.getRealDistanceFromStart(i) < 0){
+          continue;
+        }
+         
+        float localDst = tramo.getRealDistanceFromStart(i) - prev.getRealDistanceFromStart();
         float localTime = (localDst/avg);
         float time = localTime + prev.time - loopTrack.get(0).time;
-        String s = ",,,";
-        s += i;
-        s += ",,,,,,,,";
-        s += "," + int(time);
-        s += "," + int(tramo.getDistanceFromStart(i));
-        s += "," + int((tramo.getTotalLength() - tramo.getDistanceFromStart(i)));
-        output2.println(s);
+        
+        if(!started){ 
+           loopTrack.get(0).time += time; //encendemos el cronómetro
+           time = 0;
+           started = true;
+        }
+        
+        String s = car.id + "," + tramo.id ; 
+        s += "," + i;
+        s += "," + (int(avg * 10)/10.0);
+        s += "," + (int(time * 10) /10.0);
+        s += "," + int(tramo.getRealDistanceFromStart(i));
+        s += "," + int((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));
+        insertMySQL2(s);
+
+        if(i >= tramo.getRealEndIndex()){
+          last.time = time + loopTrack.get(0).time; //apagamos el cronometro
+          break; 
+        }
       }
   }
 
@@ -166,7 +148,7 @@ class LoopTrack {
   float getDistanceFromStart() {
     if(loopTrack == null) return 0;
     if(loopTrack.size() == 0) return 0;
-    return last.getDistanceFromStart();
+    return last.getRealDistanceFromStart();
   }
    
   float getTotalTime() {
@@ -178,8 +160,8 @@ class LoopTrack {
    float calculateAvgSpeedOfLastPeriod() {
     if (loopTrack.size() > 1) {
       LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
-      if (last.time - prev.time == 0) return 0;
-      return (last.getDistanceFromStart() - prev.getDistanceFromStart())/(last.time - prev.time);
+      if (last.time == prev.time) return 0;
+      return (last.getRealDistanceFromStart() - prev.getRealDistanceFromStart())/(last.time - prev.time);
     }
     else {
       return -1;
