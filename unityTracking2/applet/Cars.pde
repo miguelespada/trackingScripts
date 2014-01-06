@@ -10,6 +10,7 @@ class Cars {
   void loadCars(String fileName){
     this.fileName = fileName;
     String lines[] = loadStrings(fileName);
+
     try{
       for (int i = 0 ; i < lines.length; i++) {
          lines[i] = lines[i].replace(" ", "");
@@ -17,30 +18,19 @@ class Cars {
          int id = int(tokens[0]);
          String name = tokens[1];
          String theColor = tokens[2];
-         int enabled = int(tokens[3]);
          Car c = new Car(id, name);
          c.setColor(theColor);
          add(c);
-         if(enabled == 1) 
-           c.enabled = true;
-         else
-           c.enabled = false;
          logFile.println("Car added: " + name + " " + id);
       }
     }
     catch(Exception e){
+      logFile.println(e);
       logFile.println("ERROR: reading cars");
     }
+    updateLeader();
   }
-  void writeCars(){
-    PrintWriter output = createWriter(fileName);  
-    for (Car c: cars){
-        String s = c.toString();
-        output.println(s);
-     }
-     output.close();
   
-  }
   void add(Car c) {
     cars.add(c);
     registerTramo(c, ts);
@@ -49,6 +39,12 @@ class Cars {
   void update() {
       for (Car c: cars)
         c.update();
+  }
+   void updateLeader() {
+     int l = mySql.getLeader();
+      for (Car c: cars)
+        if(l == c.id) c.leader = true;
+        else c.leader = false;
   }
 
   void addData(int id, float x, float y, float s, int d) {
@@ -89,27 +85,25 @@ class Cars {
        c.drawLoop();
   }
 
-  void removeLoops(){
-    for(Car c: cars)
-      c.removeLoops();
-    
-  }
   void mouseClicked() {
     for(Car c: cars)
       c.mouseClicked();
-    writeCars();
+    if(keyCodes[SHIFT]) 
+      updateLeader();
   }
   
   void enable() {
-    for(Car c: cars)
+    for(Car c: cars){
       c.enabled = true;
-    writeCars();
+      mySql.updateEnabled(c.id, c.enabled);
+    }
   }
   
   void disable() {
-    for(Car c: cars)
+    for(Car c: cars){
       c.enabled = false;
-    writeCars();
+      mySql.updateEnabled(c.id, c.enabled);
+    }
   }
   
   

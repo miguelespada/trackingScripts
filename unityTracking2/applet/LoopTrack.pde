@@ -49,9 +49,6 @@ class LoopTrack {
   
     accError = 0;
   }
-  void removeData(){
-    removeMySQL();
-  }
   
   void add(int proyectionIndex, float time, float speed, String status) {
     speed = speed * 1000/3600;
@@ -80,7 +77,7 @@ class LoopTrack {
     if(last.status == "running")
       accError += error;
     
-    insertMySQL(s);
+    mySql.insertTrack(s, true);
      
     
     writeInterpolation(avg);
@@ -116,7 +113,8 @@ class LoopTrack {
         s += "," + (int(time * 10) /10.0);
         s += "," + int(tramo.getRealDistanceFromStart(i));
         s += "," + int((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));
-        insertMySQL2(s);
+       
+      mySql.insertTrack(s, false);
 
         if(i >= tramo.getRealEndIndex()){
           last.time = time + loopTrack.get(0).time; //apagamos el cronometro

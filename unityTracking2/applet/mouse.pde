@@ -1,4 +1,6 @@
 void mouseDragged() {
+
+  lastActivity  =millis();
   if (keyPressed && key == 'z') {
     dZ += (pmouseY - mouseY) / float(height);
     if (dZ <= 0.001) dZ = 0.001;
@@ -14,7 +16,8 @@ void mouseDragged() {
     }
   }
 }
-void mouseClicked(){
+void mouseClicked(){   
+  lastActivity  =millis();
    cars.mouseClicked(); 
 }
 

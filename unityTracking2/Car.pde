@@ -15,6 +15,7 @@ class Car {
   String name;
   int x, y;
   boolean enabled = true;
+  boolean leader = false;
   
   ArrayList<TramoStatus> tramos;
 
@@ -30,7 +31,7 @@ class Car {
     lastActiveFrame = -1;
     fresh = false;
     tramos = new ArrayList<TramoStatus>();
-    
+    enabled = mySql.isEnabled(id);
   }
   
   
@@ -170,6 +171,8 @@ class Car {
     else
       fill(255, 0, 0);
     ellipse(x + ANCHO - 10 , y + 7, 8, 8);
+    if(leader)
+      ellipse(x + ANCHO - 20 , y + 7, 8, 8);
     popStyle(); 
     textSize(s * 0.8);
     textAlign(LEFT);
@@ -212,23 +215,25 @@ class Car {
     
     return ALTO;
   }
-        
+  
    void mouseClicked() {
      if(mouseX > x && mouseX < x + ANCHO && 
        mouseY > y && mouseY < y + ALTO){
-          enabled = !enabled;
+          if(keyCodes[SHIFT]) {
+            leader = true;
+            mySql.updateLeader(id);
+          }
+          else{
+            enabled = !enabled;
+            mySql.updateEnabled(id, enabled);
+          }
      }
    }
    String toString(){
-     
      String s = "";
      s += str(id) + ",";
      s += name + ",";
-     s += hex(theColor).substring(2,8) + ",";
-     if(enabled)
-       s += "1";
-     else
-       s += "0";
+     s += hex(theColor).substring(2,8);
      return s;
    }
    float getDistanceFromStart(int tramoId){

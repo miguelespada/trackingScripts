@@ -11,7 +11,7 @@ void initializeKeys() {
   }
 }
 void keyPressed() {
-
+  lastActivity  =millis();
   if (key == CODED && keyCode >=0 && keyCode < 255) {
     keyCodes[keyCode] = true;
     if (keyCode == UP) {
@@ -39,13 +39,15 @@ void keyPressed() {
       saveSetting("focus", tramos.focus);
     }
     
-    if (key == 'a'){
-       if(keyCodes[SHIFT])
-         cars.disable();
-       else 
+    if (key == 'a')
          cars.enable();
-    }
+    if (key == 'A')
+         cars.disable();
     
+    if(key == 'r'){
+      initSystem();
+      mySql.remove();
+    }
   }
 }
 void keyReleased() {

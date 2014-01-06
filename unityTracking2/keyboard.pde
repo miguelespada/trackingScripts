@@ -39,16 +39,14 @@ void keyPressed() {
       saveSetting("focus", tramos.focus);
     }
     
-    if (key == 'a'){
-       if(keyCodes[SHIFT])
-         cars.disable();
-       else 
+    if (key == 'a')
          cars.enable();
-    }
+    if (key == 'A')
+         cars.disable();
+    
     if(key == 'r'){
       initSystem();
-      clearMySQL();
-      removeMySQL();
+      mySql.remove();
     }
   }
 }

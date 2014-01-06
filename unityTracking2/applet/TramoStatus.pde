@@ -99,10 +99,6 @@ class TramoStatus {
   
   
 
-  void removeLoop(){
-     if(loopTrack != null) 
-         loopTrack.removeData();
-  }
 
 }
 

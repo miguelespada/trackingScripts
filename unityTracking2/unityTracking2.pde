@@ -12,7 +12,9 @@ int trackThreshold;
 int M;
 PrintWriter logFile;
 float lastActivity;
+SQL mySql;
 void setup() {
+  mySql = new SQL(new MySQL(this, "localhost:8889", "unity", "miguel", "miguel"));
 
 
   size(800, 600);
@@ -38,7 +40,6 @@ void setup() {
   
   setupOsc();
   initSystem();
-  setupMySQL();
   
   frameRate(30);
  
@@ -62,7 +63,7 @@ void draw() {
       frameRate(30);
       background(0);
     }
-    processSQL();
+    mySql.process();
     stroke(255);
     pushMatrix();
     scale(dZ);

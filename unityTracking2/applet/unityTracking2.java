@@ -34,12 +34,13 @@ String host = "";
 int trackThreshold;
 int M;
 PrintWriter logFile;
-
+float lastActivity;
+SQL mySql;
 public void setup() {
+  mySql = new SQL(new MySQL(this, "localhost:8889", "unity", "miguel", "miguel"));
 
 
   size(800, 600);
-  frameRate(30);
   smooth();
   loadSettings();
 
@@ -62,13 +63,12 @@ public void setup() {
   
   setupOsc();
   initSystem();
-  setupMySQL();
   
+  frameRate(30);
  
 }
+
 public void initSystem(){
-  
-  
   tramos = new Tramos(host + "Tramos/tramos.txt");
   ref = tramos.setFocus(focus);
   
@@ -78,24 +78,29 @@ public void initSystem(){
 }
 
 public void draw() {
-  processSQL();
+    if(millis() > lastActivity + 5000){
+      background(25);    
+      frameRate(1);
+    }
+    else{
+      frameRate(30);
+      background(0);
+    }
+    mySql.process();
+    stroke(255);
+    pushMatrix();
+    scale(dZ);
+    translate(dX -ref.x, dY -ref.y);
+    strokeWeight(1/dZ);
+    tramos.draw();  
+    cars.draw();
+    
+    popMatrix();
+   
+    cars.displayInfo(tramos.focus, 10, 20, 255);
+    cars.drawCurrentClassification(focus, width - 200, 20);
+    cars.drawFinalClassification(focus, width - 100, 20);
   
-  background(0);
-  stroke(255);
-  pushMatrix();
-  scale(dZ);
-  translate(dX -ref.x, dY -ref.y);
-  strokeWeight(1/dZ);
-  tramos.draw();
-  cars.update();
-  cars.draw();
-  
-  popMatrix();
- 
-  cars.displayInfo(tramos.focus, 10, 20, 255);
-  cars.drawCurrentClassification(focus, width - 200, 20);
-  cars.drawFinalClassification(focus, width - 100, 20);
-
 }
 
 int ANCHO = 220;
@@ -115,6 +120,7 @@ class Car {
   String name;
   int x, y;
   boolean enabled = true;
+  boolean leader = false;
   
   ArrayList<TramoStatus> tramos;
 
@@ -130,7 +136,7 @@ class Car {
     lastActiveFrame = -1;
     fresh = false;
     tramos = new ArrayList<TramoStatus>();
-    
+    enabled = mySql.isEnabled(id);
   }
   
   
@@ -142,6 +148,7 @@ class Car {
     speed = s;
     pTime = time;
     time = t;
+    update();
   }
 
   public void addPos(float x, float y) {
@@ -240,11 +247,6 @@ class Car {
     } 
   }
  
-  public void removeLoops(){
-    for(TramoStatus t: tramos){
-      t.removeLoop();
-    }
-  }
   
   public int drawInfo(int tramoId, int x, int y, int opacity) {
     this.x = x;
@@ -316,23 +318,26 @@ class Car {
     
     return ALTO;
   }
-        
+  
    public void mouseClicked() {
      if(mouseX > x && mouseX < x + ANCHO && 
        mouseY > y && mouseY < y + ALTO){
-          enabled = !enabled;
+          if(keyCodes[SHIFT]) {
+            leader = true;
+            mySql.updateLeader(id);
+            print("updating... " + id);
+          }
+          else{
+            enabled = !enabled;
+            mySql.updateEnabled(id, enabled);
+          }
      }
    }
    public String toString(){
-     
      String s = "";
      s += str(id) + ",";
      s += name + ",";
-     s += hex(theColor).substring(2,8) + ",";
-     if(enabled)
-       s += "1";
-     else
-       s += "0";
+     s += hex(theColor).substring(2,8);
      return s;
    }
    public float getDistanceFromStart(int tramoId){
@@ -365,6 +370,7 @@ class Cars {
   public void loadCars(String fileName){
     this.fileName = fileName;
     String lines[] = loadStrings(fileName);
+
     try{
       for (int i = 0 ; i < lines.length; i++) {
          lines[i] = lines[i].replace(" ", "");
@@ -372,30 +378,19 @@ class Cars {
          int id = PApplet.parseInt(tokens[0]);
          String name = tokens[1];
          String theColor = tokens[2];
-         int enabled = PApplet.parseInt(tokens[3]);
          Car c = new Car(id, name);
          c.setColor(theColor);
          add(c);
-         if(enabled == 1) 
-           c.enabled = true;
-         else
-           c.enabled = false;
          logFile.println("Car added: " + name + " " + id);
       }
     }
     catch(Exception e){
+      logFile.println(e);
       logFile.println("ERROR: reading cars");
     }
+    updateLeader();
   }
-  public void writeCars(){
-    PrintWriter output = createWriter(fileName);  
-    for (Car c: cars){
-        String s = c.toString();
-        output.println(s);
-     }
-     output.close();
   
-  }
   public void add(Car c) {
     cars.add(c);
     registerTramo(c, ts);
@@ -404,6 +399,12 @@ class Cars {
   public void update() {
       for (Car c: cars)
         c.update();
+  }
+   public void updateLeader() {
+     int l = mySql.getLeader();
+      for (Car c: cars)
+        if(l == c.id) c.leader = true;
+        else c.leader = false;
   }
 
   public void addData(int id, float x, float y, float s, int d) {
@@ -444,27 +445,25 @@ class Cars {
        c.drawLoop();
   }
 
-  public void removeLoops(){
-    for(Car c: cars)
-      c.removeLoops();
-    
-  }
   public void mouseClicked() {
     for(Car c: cars)
       c.mouseClicked();
-    writeCars();
+    if(keyCodes[SHIFT]) 
+      updateLeader();
   }
   
   public void enable() {
-    for(Car c: cars)
+    for(Car c: cars){
       c.enabled = true;
-    writeCars();
+      mySql.updateEnabled(c.id, c.enabled);
+    }
   }
   
   public void disable() {
-    for(Car c: cars)
+    for(Car c: cars){
       c.enabled = false;
-    writeCars();
+      mySql.updateEnabled(c.id, c.enabled);
+    }
   }
   
   
@@ -599,9 +598,6 @@ class LoopTrack {
   
     accError = 0;
   }
-  public void removeData(){
-    removeMySQL();
-  }
   
   public void add(int proyectionIndex, float time, float speed, String status) {
     speed = speed * 1000/3600;
@@ -630,7 +626,7 @@ class LoopTrack {
     if(last.status == "running")
       accError += error;
     
-    insertMySQL(s);
+    mySql.insertTrack(s, true);
      
     
     writeInterpolation(avg);
@@ -666,7 +662,8 @@ class LoopTrack {
         s += "," + (PApplet.parseInt(time * 10) /10.0f);
         s += "," + PApplet.parseInt(tramo.getRealDistanceFromStart(i));
         s += "," + PApplet.parseInt((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));
-        insertMySQL2(s);
+       
+      mySql.insertTrack(s, false);
 
         if(i >= tramo.getRealEndIndex()){
           last.time = time + loopTrack.get(0).time; //apagamos el cronometro
@@ -738,7 +735,7 @@ public void oscEvent(OscMessage theOscMessage) {
   
   if (theOscMessage.checkAddrPattern("/reset")==true) {
     initSystem();
-    cars.removeLoops();
+    mySql.remove();
     return;
   }
   
@@ -747,44 +744,88 @@ public void oscEvent(OscMessage theOscMessage) {
 }
 
 
-MySQL msql;
-public void setupMySQL()
-{
-    String user     = "miguel";
-    String pass     = "miguel";
-    String database = "unity";
-    msql = new MySQL( this, "localhost:8889", database, user, pass );
-    msql.connect();
-}
-
-public void insertMySQL(String s){
-   msql.query("INSERT INTO tracks VALUES (" + s  + ")");   
-}
-public void insertMySQL2(String s){
-   msql.query("INSERT INTO tracks (CarId, TramoId, realIndex, avgSpeed, trackTime, trackDistance, remainingDistance) VALUES (" + s  + ")");   
-}
-
-public void removeMySQL(){
-   msql.query("DELETE FROM tracks WHERE 1");   
-}
-
-public void processSQL(){
-  msql.query( "SELECT * FROM data WHERE processed = 0 order by id LIMIT 1");
-  while (msql.next())
-   {
-    int id = msql.getInt("id"); 
-    int carId= msql.getInt("carId"); 
-    float x = msql.getFloat("x"); 
-    float y = msql.getFloat("y"); 
-    float speed = msql.getFloat("speed"); 
-    int time =  msql.getInt("time"); 
-    cars.addData(carId, x, y, speed, time);
-    println("Processing... " + id);
-    msql.execute( "UPDATE data SET processed = 1 WHERE id ="+ str(id));
-    break;
+class sqlData {
+  int id;
+  int carId;
+  float x, y;
+  float speed;
+  int time;
+  sqlData() {
   }
-
 }
+
+
+class SQL {
+  MySQL msql;
+  SQL(MySQL msql) { 
+    this.msql = msql; 
+    msql.connect();
+  }
+  public void insertTrack(String s, boolean full) {
+    if (full)
+      msql.query("INSERT INTO tracks VALUES (" + s  + ")");  
+    else
+      msql.query("INSERT INTO tracks (CarId, TramoId, realIndex, avgSpeed, trackTime, trackDistance, remainingDistance) VALUES (" + s  + ")");
+  }
+  public void remove() {
+    msql.query("DELETE FROM tracks WHERE 1");
+    msql.query("UPDATE data SET processed = 0 WHERE processed = 1");
+  }
+  
+  public void process() {
+    msql.query( "SELECT * FROM data WHERE processed = 0 order by id");
+    ArrayList<sqlData> data = new ArrayList<sqlData>();
+    while (msql.next ())
+    {
+      sqlData s = new sqlData();
+      s.id = msql.getInt("id"); 
+      s.carId= msql.getInt("carId"); 
+      s.x = msql.getFloat("x"); 
+      s.y = msql.getFloat("y"); 
+      s.speed = msql.getFloat("speed"); 
+      s.time =  msql.getInt("time"); 
+      data.add(s);
+    }
+    for (sqlData s: data) {
+      println("Processing... " + s.id);
+      cars.addData(s.carId, s.x, s.y, s.speed, s.time);
+      msql.execute( "UPDATE data SET processed = 1 WHERE id ="+ str(s.id));
+    }
+  }
+  public void updateLeader(int id){
+      msql.execute("UPDATE leader SET carId ="+ str(id) + " WHERE 1") ;
+  }
+  public int getLeader(){
+      msql.query( "SELECT carId FROM leader");
+       while (msql.next ())
+      {
+        return msql.getInt("carId");
+      }
+      return 0;
+  }
+  
+  public void updateEnabled(int id, boolean v){
+    if(v)
+      msql.execute( "UPDATE cars SET enabled = 1 WHERE carId ="+ str(id));
+    else
+      msql.execute( "UPDATE cars SET enabled = 0 WHERE carId ="+ str(id));
+  }
+  public boolean isEnabled(int id){
+     msql.query( "SELECT enabled FROM cars WHERE carId ="+ str(id));
+     while (msql.next ())
+      {
+        return msql.getInt("enabled") == 1;
+      }
+      msql.query( "INSERT INTO cars (CarId) VALUES (" + str(id)  + ")");
+      return true;
+  }
+}
+
+
+
+
+
+
 String settingsFile = "mySettings.txt";
 HashMap settings = new HashMap();
 
@@ -951,10 +992,6 @@ class TramoStatus {
   
   
 
-  public void removeLoop(){
-     if(loopTrack != null) 
-         loopTrack.removeData();
-  }
 
 }
 
@@ -1074,7 +1111,7 @@ public void initializeKeys() {
   }
 }
 public void keyPressed() {
-
+  lastActivity  =millis();
   if (key == CODED && keyCode >=0 && keyCode < 255) {
     keyCodes[keyCode] = true;
     if (keyCode == UP) {
@@ -1102,13 +1139,15 @@ public void keyPressed() {
       saveSetting("focus", tramos.focus);
     }
     
-    if (key == 'a'){
-       if(keyCodes[SHIFT])
-         cars.disable();
-       else 
+    if (key == 'a')
          cars.enable();
-    }
+    if (key == 'A')
+         cars.disable();
     
+    if(key == 'r'){
+      initSystem();
+      mySql.remove();
+    }
   }
 }
 public void keyReleased() {
@@ -1122,6 +1161,8 @@ public void keyReleased() {
 }
 
 public void mouseDragged() {
+
+  lastActivity  =millis();
   if (keyPressed && key == 'z') {
     dZ += (pmouseY - mouseY) / PApplet.parseFloat(height);
     if (dZ <= 0.001f) dZ = 0.001f;
@@ -1137,7 +1178,8 @@ public void mouseDragged() {
     }
   }
 }
-public void mouseClicked(){
+public void mouseClicked(){   
+  lastActivity  =millis();
    cars.mouseClicked(); 
 }
 

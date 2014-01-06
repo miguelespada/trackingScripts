@@ -1,2 +1,0 @@
-tramo 0,1_trackUtm.txt,projectedSplineRaw.txt,16,-59
-tramo 1,0_trackUtm.txt,0_trackUtm.txt,0,0
