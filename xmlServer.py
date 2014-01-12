@@ -8,12 +8,18 @@ import sys,os
 import dateutil.parser
 import OSC
 import _mysql
+from glob import glob
+import time
+import urllib2
+response = urllib2.urlopen('http://www.example.com/')
+html = response.read()
 
 con = _mysql.connect('127.0.0.1', 'miguel', 'miguel', 'unity', 8889)
 
 
 delay = 1000
 gps = None
+lastModified = 0
 
 class GPS:
     def __init__(self, path, I, O):
@@ -34,15 +40,19 @@ class GPS:
         sendOscReset()
 
     def parseGps(self):
-        global delay
+        global delay, lastModified
         theFile = self.path + "gps" + str(self.i) + ".xml"
         self.i += 1
         if self.i == self.O:
             delay = 0
             self.i -= 1
             #sendOscReset()
-        tree = ET.parse(theFile)
-        return tree.getroot()
+        if os.path.getmtime(theFile) != lastModified:
+            tree = ET.parse(theFile)
+            lastModified = os.path.getmtime(theFile) 
+            return tree.getroot()
+        else:
+            return None
 
     def getAllData(self, value):
         query = ".//tracking[vehicle='" + value +"']"
@@ -79,6 +89,7 @@ class GPS:
         time =  result.find('date').text
         d = int(value), float(northing), float(easting), float(speed), (int(time) / 1000) % 10000, state
         return d
+        
     def getVehicleStatus(self, value):
         query = ".//tracking[vehicle='" + value +"']"
         result = self.data.findall(query)[0]
@@ -88,6 +99,7 @@ class GPS:
 
     def pullData(self):
         self.data = self.parseGps()
+        if self.data == None: return None
         return self.getVehicleIds()
         
 
@@ -265,13 +277,14 @@ def main():
             root.after(1000,readData)
         else:  
             vehicles = gps.pullData()
-            ex.setListData(vehicles, gps)
-            selected = ex.getSelectedString()
-            ex.setLog("Current track: " + str(gps.i))
-            for s in selected:
-                data = gps.getVehicleNavigationData(s)
-                if data[-1] == 'WRC':
-                    sendOsc(data)
+            if vehicles != None:
+                ex.setListData(vehicles, gps)
+                selected = ex.getSelectedString()
+                ex.setLog("Current track: " + str(gps.i))
+                for s in selected:
+                    data = gps.getVehicleNavigationData(s)
+                    if data[-1] == 'WRC':
+                        sendOsc(data)
             root.after(delay,readData)  
 
     root.after(1,readData)

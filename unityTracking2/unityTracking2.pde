@@ -51,7 +51,7 @@ void initSystem(){
   
   cars = new Cars();
   cars.registerTramos(tramos);
-  cars.loadCars(host + "Cars/cars.txt");
+  cars.loadCars();
 }
 
 void draw() {
@@ -78,5 +78,14 @@ void draw() {
     cars.drawCurrentClassification(focus, width - 200, 20);
     cars.drawFinalClassification(focus, width - 100, 20);
   
+    drawInfo();
+}
+
+void drawInfo(){
+  pushStyle();
+  fill(255);
+  textSize(12);
+  text("Threshold: " + trackThreshold, width - 150, height - 100);
+  popStyle();
 }
 
