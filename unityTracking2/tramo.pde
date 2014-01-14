@@ -34,6 +34,7 @@ class Track {
       end = data.get(data.size() - 1);
     }
     this.totalDst = dst;
+    println   (totalDst);
   }
 
   void setStart(int s) {

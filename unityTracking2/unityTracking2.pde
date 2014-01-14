@@ -46,7 +46,7 @@ void setup() {
 }
 
 void initSystem(){
-  tramos = new Tramos(host + "Tramos/tramos.txt");
+  tramos = new Tramos(host + "Tramos/montecarlo.txt");
   ref = tramos.setFocus(focus);
   
   cars = new Cars();
@@ -66,19 +66,23 @@ void draw() {
     mySql.process();
     stroke(255);
     pushMatrix();
+    
+   translate(width/2, height/2);
+
     scale(dZ);
+   translate(-width/2, -height/2);
     translate(dX -ref.x, dY -ref.y);
     strokeWeight(1/dZ);
     tramos.draw();  
-    cars.draw();
+    //cars.draw();
     
     popMatrix();
-   
+   /*
     cars.displayInfo(tramos.focus, 10, 20, 255);
     cars.drawCurrentClassification(focus, width - 200, 20);
     cars.drawFinalClassification(focus, width - 100, 20);
   
-    drawInfo();
+    drawInfo();*/
 }
 
 void drawInfo(){

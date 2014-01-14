@@ -3,17 +3,27 @@
 import utm
 
 import Tkinter, Tkconstants, tkFileDialog
+ 
+import pyproj
+wgs84=pyproj.Proj("+init=EPSG:4326")
+utm31=pyproj.Proj("+init=EPSG:32631")
 
 def convertGeo2utm(f, g):
     try:
-        lines = f.readlines()
+        lines = f.read()
+        lines = lines.split(' ')
         for l in lines:
-            tokens = l.split(' ')
-            u = utm.from_latlon(float(tokens[1]), float(tokens[0]))
-            g.write(str(u[1]) + " " +  str(u[0]))
-            g.write(" " + str(float(tokens[2])) + " " + str(u[2]) + " " +str(u[3]) + "\n")
+            tokens = l.split(',')
+            # u = utm.from_latlon(float(tokens[1]), float(tokens[0]))
+            # g.write(str(u[1]) + " " +  str(u[0]))
+            # g.write(" " + str(float(tokens[2])) + " " + str(u[2]) + " " +str(u[3]) + "\n")
+            x, y = float(tokens[0]), float(tokens[1])
+            a = pyproj.transform(wgs84,utm31, x, y)
+            g.write(str(a[1]) + " " +  str(a[0]))
+            g.write(" " + str(float(tokens[2])) + " 31 T\n")
         return 1
-    except:
+    except Exception as e:
+        print e
         return -1
 
 def convertAscii2raw(f, g):
@@ -24,6 +34,7 @@ def convertAscii2raw(f, g):
         lines = lines.replace('\t',' ')
         tokens = lines.split()
         tokens = tokens[4:]
+        print tokens
         for x in range(len(tokens)/4):
             g.write(tokens[(x * 4)+ 3]) 
             g.write(" ")
@@ -77,8 +88,8 @@ class TkFileDialogExample(Tkinter.Frame):
     b = Tkinter.Button(self, text='ASCII to UTM', command=self.ascii2raw)
     b.place(x=20, y=20, width = 120, height = 40 )
 
-    b = Tkinter.Button(self, text='UTM to ASCII', command=self.utm2ascii)    
-    b.place(x=140, y=20, width = 120, height = 40 )
+    # b = Tkinter.Button(self, text='UTM to ASCII', command=self.utm2ascii)    
+    # b.place(x=140, y=20, width = 120, height = 40 )
 
     b = Tkinter.Button(self, text='Geo to UTM', command=self.geo2utm)
     b.place(x=260, y=20, width = 120, height = 40 )
@@ -91,7 +102,7 @@ class TkFileDialogExample(Tkinter.Frame):
    
   def ascii2raw(self):
     filename = tkFileDialog.askopenfilename()
-    filenameOutput = filename[:-4] + "_raw.txt" 
+    filenameOutput = filename.replace("_ascii", "")
     if filename:
       f = open(filename, 'r')
       g = open(filenameOutput, 'w')
@@ -124,6 +135,16 @@ class TkFileDialogExample(Tkinter.Frame):
       f = open(filename, 'r')
       g = open(filenameOutput, 'w')
       r = convertGeo2utm(f, g)
+      if r == 1:
+        self.var.set("Wrote: " + filenameOutput)
+      else:
+        self.var.set("Error: converting " + filename)
+      f.close()
+      g.close()
+      f = open(filenameOutput, 'r')
+      filenameOutput = filename[:-4] + "_ascii.txt" 
+      g = open(filenameOutput, 'w')
+      r = convertUtm2ascii(f, g)
       if r == 1:
         self.var.set("Wrote: " + filenameOutput)
       else:
