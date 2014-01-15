@@ -24,7 +24,7 @@ class Track {
     data = new ArrayList<TramoPoint>();
     for (int i = 0 ; i < lines.length; i++) {
       String[] tokens = splitTokens(lines[i]);
-      PVector pos = new PVector(float(tokens[0]) + ref.x, float(tokens[1]) + ref.y);
+      PVector pos = new PVector(float(tokens[1]) + ref.x, float(tokens[0]) + ref.y);
       if (i > 1)
         dst += data.get(i - 1).pos.dist(pos);
       data.add(new TramoPoint(pos, dst));

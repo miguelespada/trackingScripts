@@ -1,5 +1,5 @@
 int ANCHO = 220;
-int ALTO = 55;
+int ALTO = 50;
 
 class Car {
   color theColor;
@@ -77,6 +77,7 @@ class Car {
         line(pos0.x, pos0.y, pos1.x, pos1.y);
     }
    
+    line(ref.x, ref.y, pos.x, pos.y);
     
     fill(theColor);
     if(!enabled) fill(theColor, 100);
@@ -84,13 +85,17 @@ class Car {
     else noStroke();
 
     ellipseMode(CENTER);
-    ellipse(pos.x, pos.y, 18/dZ, 18/dZ);
+    pushMatrix();
+    translate(pos.x, pos.y);
+    scale(1, -1);
+    ellipse(0, 0, 18/dZ, 18/dZ);
     fill(0);
     textSize(12/dZ);
     textAlign(CENTER);
     noStroke();
     float ascent = textAscent();
-    text(id, pos.x, pos.y + 5/dZ);
+    text(id, 0, 5/dZ);
+    popMatrix();
 
     popStyle();
   }
@@ -188,7 +193,7 @@ class Car {
     textSize(s * 0.8);
     textAlign(LEFT);
     
-    text("CAR: " + name + " ID: " + id + " SPEED: " + int(speed) + "km/h " + status, x, y + s);
+    text( id + " - " + name +  " " + status, x, y + s);
      
     pushStyle();
    
@@ -209,7 +214,7 @@ class Car {
       status = "OUT";
       fill(0, opacity);
     }
-    text("TRAMO: " + t.getId()  + " STATUS: " + status, x, y + 2*s);
+    text("SPEED: " + int(speed) + "km/h " + "STATUS: " + status, x, y + 2*s);
     popStyle(); 
   
     float dst =  t.getDistanceFromStart();   

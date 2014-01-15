@@ -58,6 +58,14 @@ void keyPressed() {
       initSystem();
       mySql.remove();
     }
+     if(key == 'R'){
+        dX = 0;
+        dY = 0;
+        dZ = 0.05;
+        saveSetting("dX", dX);
+        saveSetting("dY", dY);
+        saveSetting("dZ", dZ);
+    }
   }
 }
 void keyReleased() {

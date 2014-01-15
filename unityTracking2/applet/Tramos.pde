@@ -16,12 +16,12 @@ class Tramos {
          lines[i] = lines[i].replace(" ", "");
          String[] tokens = splitTokens(lines[i], ",");
          String tramoName = tokens[0];
-         String utm = tokens[1];
-         String real = tokens[2];
-         int start = int(tokens[3]);
-         int end = -abs(int(tokens[4]));
+         String utm = "montecarlo/" + tramoName + "/" + tramoName + "_utm.txt";
+         String real = "montecarlo/" + tramoName + "/" + tramoName + "_real.txt";
+         int start = int(tokens[1]);
+         int end = -abs(int(tokens[2]));
          add(new Tramo(tramoName, utm, real, start, end));
-         logFile.println("Tramo added: " + tramoName);
+         println("Tramo added: " + tramoName);
       }
     }
     catch(Exception e){

@@ -6,6 +6,7 @@ class Car {
   PVector pos;
   int id; 
   float speed;
+  String status;
   
   PVector tracks[];
   int idx;
@@ -15,6 +16,7 @@ class Car {
   String name;
   int x, y;
   boolean enabled = true;
+  boolean inClassification = true;
   boolean leader = false;
   
   ArrayList<TramoStatus> tramos;
@@ -31,11 +33,10 @@ class Car {
     lastActiveFrame = -1;
     fresh = false;
     tramos = new ArrayList<TramoStatus>();
-    enabled = mySql.isEnabled(id);
   }
   
   
-  void addPoint(float x, float y, float s, int t){
+  void addPoint(float x, float y, float s, int t, String status){
     if(time == t) return;
     fresh = true; 
     lastActiveFrame = frameCount;
@@ -43,6 +44,7 @@ class Car {
     speed = s;
     pTime = time;
     time = t;
+    this.status = status;
     update();
   }
 
@@ -171,11 +173,22 @@ class Car {
     else
       fill(255, 0, 0);
     ellipse(x + ANCHO - 10 , y + 7, 8, 8);
+    
+    if(inClassification) 
+      fill(0, 255, 0);
+    else
+      fill(255, 0, 0);
+    ellipse(x + ANCHO - 20 , y + 7, 8, 8);
+    
+     fill(255);
+    if(leader)
+      ellipse(x + ANCHO - 30 , y + 7, 8, 8);
+      
     popStyle(); 
     textSize(s * 0.8);
     textAlign(LEFT);
     
-    text("CAR: " + name + " ID: " + id + " SPEED: " + int(speed) + "km/h", x, y + s);
+    text("CAR: " + name + " ID: " + id + " SPEED: " + int(speed) + "km/h " + status, x, y + s);
      
     pushStyle();
    
@@ -220,11 +233,19 @@ class Car {
           if(keyCodes[SHIFT]) {
             leader = true;
             mySql.updateLeader(id);
-            print("updating... " + id);
+          }
+          else if(keyCodes[ALT]){
+            inClassification = !inClassification;
+            mySql.updateInClassification(id, inClassification);
           }
           else{
-            enabled = !enabled;
+            enabled = !enabled; 
             mySql.updateEnabled(id, enabled);
+            
+            if(!enabled && inClassification) {
+              inClassification = false;
+              mySql.updateInClassification(id, inClassification);
+            }
           }
      }
    }

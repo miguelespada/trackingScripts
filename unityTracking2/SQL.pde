@@ -14,9 +14,12 @@ class sqlData {
 
 class SQL {
   MySQL msql;
-  SQL(MySQL msql) { 
+  MySQL remote;
+  SQL(MySQL msql, MySQL remote) { 
     this.msql = msql; 
+    this.remote = remote;
     msql.connect();
+    remote.connect();
   }
   void insertTrack(String s, boolean full) {
     if (full)
@@ -29,7 +32,7 @@ class SQL {
     msql.query("DELETE FROM tracks WHERE 1");
     String q = "UPDATE data SET processed = 0 WHERE processed = 1 and timeStamp > '" + date + "'"  ;
     println(q);
-    msql.query(q);
+    remote.query(q);
   }
    void loadCars() {
     msql.query( "SELECT * FROM cars ORDER BY carId");
@@ -47,23 +50,23 @@ class SQL {
    
    }
   void process() {
-    msql.query( "SELECT * FROM data WHERE processed = 0 order by id");
+    remote.query( "SELECT * FROM data WHERE processed = 0 order by id");
     ArrayList<sqlData> data = new ArrayList<sqlData>();
-    while (msql.next ())
+    while (remote.next ())
     {
       sqlData s = new sqlData();
-      s.id = msql.getInt("id"); 
-      s.carId= msql.getInt("carId"); 
-      s.x = msql.getFloat("x"); 
-      s.y = msql.getFloat("y"); 
-      s.speed = msql.getFloat("speed"); 
-      s.time =  msql.getInt("time"); 
-      s.status =  msql.getString("status");
+      s.id = remote.getInt("id"); 
+      s.carId= remote.getInt("carId"); 
+      s.x = remote.getFloat("x"); 
+      s.y = remote.getFloat("y"); 
+      s.speed = remote.getFloat("speed"); 
+      s.time =  remote.getInt("time"); 
+      s.status =  remote.getString("status");
       data.add(s);
     }
     for (sqlData s: data) {
       cars.addData(s.carId, s.x, s.y, s.speed, s.time, s.status);
-      msql.execute( "UPDATE data SET processed = 1 WHERE id ="+ str(s.id));
+      remote.execute( "UPDATE data SET processed = 1 WHERE id ="+ str(s.id));
     }
   }
   void updateLeader(int id){

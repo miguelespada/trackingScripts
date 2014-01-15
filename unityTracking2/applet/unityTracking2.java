@@ -35,9 +35,10 @@ int trackThreshold;
 int M;
 PrintWriter logFile;
 float lastActivity;
-SQL mySql;
+SQL mySql, myRemoteSql;
 public void setup() {
-  mySql = new SQL(new MySQL(this, "localhost:8889", "unity", "miguel", "miguel"));
+  mySql = new SQL(new MySQL(this, "localhost:8889", "unity", "miguel", "miguel"),
+                  new MySQL(this, "147.96.81.188", "unity", "root", "wtw6sb"));
 
 
   size(800, 600);
@@ -69,12 +70,12 @@ public void setup() {
 }
 
 public void initSystem(){
-  tramos = new Tramos(host + "Tramos/tramos.txt");
+  tramos = new Tramos(host + "Tramos/montecarlo.txt");
   ref = tramos.setFocus(focus);
   
   cars = new Cars();
   cars.registerTramos(tramos);
-  cars.loadCars(host + "Cars/cars.txt");
+  cars.loadCars();
 }
 
 public void draw() {
@@ -89,18 +90,32 @@ public void draw() {
     mySql.process();
     stroke(255);
     pushMatrix();
+    
+   translate(width/2, height/2);
+
     scale(dZ);
-    translate(dX -ref.x, dY -ref.y);
+    translate(-width/2, -height/2);
+    translate(dX -ref.x, dX -ref.x);
     strokeWeight(1/dZ);
     tramos.draw();  
     cars.draw();
-    
+    //line(cars.cars.get(0).x, cars.cars.get(0).y, dX -ref.x, dX -ref.x);
     popMatrix();
    
     cars.displayInfo(tramos.focus, 10, 20, 255);
     cars.drawCurrentClassification(focus, width - 200, 20);
     cars.drawFinalClassification(focus, width - 100, 20);
   
+    drawInfo();
+}
+
+public void drawInfo(){
+  pushStyle();
+  fill(255);
+  textSize(12);
+  text("Threshold: " + trackThreshold, width - 150, height - 100);
+  text("dZ: " + dZ, width - 150, height - 80);
+  popStyle();
 }
 
 int ANCHO = 220;
@@ -111,6 +126,7 @@ class Car {
   PVector pos;
   int id; 
   float speed;
+  String status;
   
   PVector tracks[];
   int idx;
@@ -120,6 +136,7 @@ class Car {
   String name;
   int x, y;
   boolean enabled = true;
+  boolean inClassification = true;
   boolean leader = false;
   
   ArrayList<TramoStatus> tramos;
@@ -136,11 +153,10 @@ class Car {
     lastActiveFrame = -1;
     fresh = false;
     tramos = new ArrayList<TramoStatus>();
-    enabled = mySql.isEnabled(id);
   }
   
   
-  public void addPoint(float x, float y, float s, int t){
+  public void addPoint(float x, float y, float s, int t, String status){
     if(time == t) return;
     fresh = true; 
     lastActiveFrame = frameCount;
@@ -148,6 +164,7 @@ class Car {
     speed = s;
     pTime = time;
     time = t;
+    this.status = status;
     update();
   }
 
@@ -276,11 +293,22 @@ class Car {
     else
       fill(255, 0, 0);
     ellipse(x + ANCHO - 10 , y + 7, 8, 8);
+    
+    if(inClassification) 
+      fill(0, 255, 0);
+    else
+      fill(255, 0, 0);
+    ellipse(x + ANCHO - 20 , y + 7, 8, 8);
+    
+     fill(255);
+    if(leader)
+      ellipse(x + ANCHO - 30 , y + 7, 8, 8);
+      
     popStyle(); 
     textSize(s * 0.8f);
     textAlign(LEFT);
     
-    text("CAR: " + name + " ID: " + id + " SPEED: " + PApplet.parseInt(speed) + "km/h", x, y + s);
+    text("CAR: " + name + " ID: " + id + " SPEED: " + PApplet.parseInt(speed) + "km/h " + status, x, y + s);
      
     pushStyle();
    
@@ -325,11 +353,19 @@ class Car {
           if(keyCodes[SHIFT]) {
             leader = true;
             mySql.updateLeader(id);
-            print("updating... " + id);
+          }
+          else if(keyCodes[ALT]){
+            inClassification = !inClassification;
+            mySql.updateInClassification(id, inClassification);
           }
           else{
-            enabled = !enabled;
+            enabled = !enabled; 
             mySql.updateEnabled(id, enabled);
+            
+            if(!enabled && inClassification) {
+              inClassification = false;
+              mySql.updateInClassification(id, inClassification);
+            }
           }
      }
    }
@@ -367,27 +403,8 @@ class Cars {
     cars = new ArrayList<Car>();
     
   }
-  public void loadCars(String fileName){
-    this.fileName = fileName;
-    String lines[] = loadStrings(fileName);
-
-    try{
-      for (int i = 0 ; i < lines.length; i++) {
-         lines[i] = lines[i].replace(" ", "");
-         String[] tokens = splitTokens(lines[i], ",");
-         int id = PApplet.parseInt(tokens[0]);
-         String name = tokens[1];
-         String theColor = tokens[2];
-         Car c = new Car(id, name);
-         c.setColor(theColor);
-         add(c);
-         logFile.println("Car added: " + name + " " + id);
-      }
-    }
-    catch(Exception e){
-      logFile.println(e);
-      logFile.println("ERROR: reading cars");
-    }
+  public void loadCars(){
+    mySql.loadCars();
     updateLeader();
   }
   
@@ -407,10 +424,10 @@ class Cars {
         else c.leader = false;
   }
 
-  public void addData(int id, float x, float y, float s, int d) {
+  public void addData(int id, float x, float y, float s, int d, String status) {
     for (Car c: cars) {
       if (c.id == id) {
-        c.addPoint(x, y, s, d);
+        c.addPoint(x, y, s, d, status);
         return;
       }
     }
@@ -446,6 +463,8 @@ class Cars {
   }
 
   public void mouseClicked() {
+    if(keyCodes[SHIFT]) 
+      updateLeader();
     for(Car c: cars)
       c.mouseClicked();
     if(keyCodes[SHIFT]) 
@@ -750,6 +769,7 @@ class sqlData {
   float x, y;
   float speed;
   int time;
+  String status;
   sqlData() {
   }
 }
@@ -757,9 +777,12 @@ class sqlData {
 
 class SQL {
   MySQL msql;
-  SQL(MySQL msql) { 
+  MySQL remote;
+  SQL(MySQL msql, MySQL remote) { 
     this.msql = msql; 
+    this.remote = remote;
     msql.connect();
+    remote.connect();
   }
   public void insertTrack(String s, boolean full) {
     if (full)
@@ -768,28 +791,45 @@ class SQL {
       msql.query("INSERT INTO tracks (CarId, TramoId, realIndex, avgSpeed, trackTime, trackDistance, remainingDistance) VALUES (" + s  + ")");
   }
   public void remove() {
+    String date = getInitial();
     msql.query("DELETE FROM tracks WHERE 1");
-    msql.query("UPDATE data SET processed = 0 WHERE processed = 1");
+    String q = "UPDATE data SET processed = 0 WHERE processed = 1 and timeStamp > '" + date + "'"  ;
+    println(q);
+    remote.query(q);
   }
-  
-  public void process() {
-    msql.query( "SELECT * FROM data WHERE processed = 0 order by id");
-    ArrayList<sqlData> data = new ArrayList<sqlData>();
+   public void loadCars() {
+    msql.query( "SELECT * FROM cars ORDER BY carId");
     while (msql.next ())
     {
+        int id = msql.getInt("carId");
+         String name = msql.getString("name");
+         String theColor = msql.getString("color");;
+         Car c = new Car(id, name);
+         c.setColor(theColor);
+         cars.add(c);
+         c.inClassification = (msql.getInt("inClassification") == 1);
+        c.enabled =  (msql.getInt("enabled") == 1);
+    }
+   
+   }
+  public void process() {
+    remote.query( "SELECT * FROM data WHERE processed = 0 order by id");
+    ArrayList<sqlData> data = new ArrayList<sqlData>();
+    while (remote.next ())
+    {
       sqlData s = new sqlData();
-      s.id = msql.getInt("id"); 
-      s.carId= msql.getInt("carId"); 
-      s.x = msql.getFloat("x"); 
-      s.y = msql.getFloat("y"); 
-      s.speed = msql.getFloat("speed"); 
-      s.time =  msql.getInt("time"); 
+      s.id = remote.getInt("id"); 
+      s.carId= remote.getInt("carId"); 
+      s.x = remote.getFloat("x"); 
+      s.y = remote.getFloat("y"); 
+      s.speed = remote.getFloat("speed"); 
+      s.time =  remote.getInt("time"); 
+      s.status =  remote.getString("status");
       data.add(s);
     }
     for (sqlData s: data) {
-      println("Processing... " + s.id);
-      cars.addData(s.carId, s.x, s.y, s.speed, s.time);
-      msql.execute( "UPDATE data SET processed = 1 WHERE id ="+ str(s.id));
+      cars.addData(s.carId, s.x, s.y, s.speed, s.time, s.status);
+      remote.execute( "UPDATE data SET processed = 1 WHERE id ="+ str(s.id));
     }
   }
   public void updateLeader(int id){
@@ -810,6 +850,13 @@ class SQL {
     else
       msql.execute( "UPDATE cars SET enabled = 0 WHERE carId ="+ str(id));
   }
+   public void updateInClassification(int id, boolean v){
+    if(v)
+      msql.execute( "UPDATE cars SET inClassification = 1 WHERE carId ="+ str(id));
+    else
+      msql.execute( "UPDATE cars SET inClassification = 0 WHERE carId ="+ str(id));
+  }
+  
   public boolean isEnabled(int id){
      msql.query( "SELECT enabled FROM cars WHERE carId ="+ str(id));
      while (msql.next ())
@@ -818,6 +865,15 @@ class SQL {
       }
       msql.query( "INSERT INTO cars (CarId) VALUES (" + str(id)  + ")");
       return true;
+  }
+  
+   public String getInitial(){
+     msql.query( "SELECT init FROM settings");
+     while (msql.next ())
+      {
+        return msql.getString("init");
+      }
+     return "";
   }
 }
 
@@ -1013,12 +1069,12 @@ class Tramos {
          lines[i] = lines[i].replace(" ", "");
          String[] tokens = splitTokens(lines[i], ",");
          String tramoName = tokens[0];
-         String utm = tokens[1];
-         String real = tokens[2];
-         int start = PApplet.parseInt(tokens[3]);
-         int end = -abs(PApplet.parseInt(tokens[4]));
+         String utm = "montecarlo/" + tramoName + "/" + tramoName + "_utm.txt";
+         String real = "montecarlo/" + tramoName + "/" + tramoName + "_real.txt";
+         int start = PApplet.parseInt(tokens[1]);
+         int end = -abs(PApplet.parseInt(tokens[2]));
          add(new Tramo(tramoName, utm, real, start, end));
-         logFile.println("Tramo added: " + tramoName);
+         println("Tramo added: " + tramoName);
       }
     }
     catch(Exception e){
@@ -1139,6 +1195,16 @@ public void keyPressed() {
       saveSetting("focus", tramos.focus);
     }
     
+     if (key == '0') {
+      trackThreshold += 1;
+      saveSetting("trackThreshold", trackThreshold);
+    }
+    
+     if (key == '9') {
+      trackThreshold -= 1;
+      saveSetting("trackThreshold", trackThreshold);
+    }
+    
     if (key == 'a')
          cars.enable();
     if (key == 'A')
@@ -1164,7 +1230,7 @@ public void mouseDragged() {
 
   lastActivity  =millis();
   if (keyPressed && key == 'z') {
-    dZ += (pmouseY - mouseY) / PApplet.parseFloat(height);
+    dZ += (pmouseY - mouseY) / (height * 10.0f);
     if (dZ <= 0.001f) dZ = 0.001f;
     saveSetting("dZ", dZ);
 
@@ -1209,7 +1275,7 @@ class Track {
     data = new ArrayList<TramoPoint>();
     for (int i = 0 ; i < lines.length; i++) {
       String[] tokens = splitTokens(lines[i]);
-      PVector pos = new PVector(PApplet.parseFloat(tokens[0]) + ref.x, PApplet.parseFloat(tokens[1]) + ref.y);
+      PVector pos = new PVector(PApplet.parseFloat(tokens[1]) + ref.x, PApplet.parseFloat(tokens[0]) + ref.y);
       if (i > 1)
         dst += data.get(i - 1).pos.dist(pos);
       data.add(new TramoPoint(pos, dst));

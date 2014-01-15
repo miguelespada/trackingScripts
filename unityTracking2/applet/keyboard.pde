@@ -39,6 +39,16 @@ void keyPressed() {
       saveSetting("focus", tramos.focus);
     }
     
+     if (key == '0') {
+      trackThreshold += 1;
+      saveSetting("trackThreshold", trackThreshold);
+    }
+    
+     if (key == '9') {
+      trackThreshold -= 1;
+      saveSetting("trackThreshold", trackThreshold);
+    }
+    
     if (key == 'a')
          cars.enable();
     if (key == 'A')

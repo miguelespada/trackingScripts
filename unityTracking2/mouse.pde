@@ -10,13 +10,14 @@ void mouseDragged() {
   else {
     if(keyCodes[SHIFT]){
       dX -= (pmouseX - mouseX) / dZ;
-      dY -= (pmouseY - mouseY) / dZ;
+      dY += (pmouseY - mouseY) / dZ;
       saveSetting("dX", dX);
       saveSetting("dY", dY);
     }
   }
 }
 void mouseClicked(){   
+  frameRate(30);
   lastActivity  =millis();
    cars.mouseClicked(); 
 }

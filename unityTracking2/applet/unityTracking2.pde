@@ -12,9 +12,10 @@ int trackThreshold;
 int M;
 PrintWriter logFile;
 float lastActivity;
-SQL mySql;
+SQL mySql, myRemoteSql;
 void setup() {
-  mySql = new SQL(new MySQL(this, "localhost:8889", "unity", "miguel", "miguel"));
+  mySql = new SQL(new MySQL(this, "localhost:8889", "unity", "miguel", "miguel"),
+                  new MySQL(this, "147.96.81.188", "unity", "root", "wtw6sb"));
 
 
   size(800, 600);
@@ -46,12 +47,12 @@ void setup() {
 }
 
 void initSystem(){
-  tramos = new Tramos(host + "Tramos/tramos.txt");
+  tramos = new Tramos(host + "Tramos/montecarlo.txt");
   ref = tramos.setFocus(focus);
   
   cars = new Cars();
   cars.registerTramos(tramos);
-  cars.loadCars(host + "Cars/cars.txt");
+  cars.loadCars();
 }
 
 void draw() {
@@ -66,17 +67,31 @@ void draw() {
     mySql.process();
     stroke(255);
     pushMatrix();
+    
+   translate(width/2, height/2);
+
     scale(dZ);
-    translate(dX -ref.x, dY -ref.y);
+    translate(-width/2, -height/2);
+    translate(dX -ref.x, dX -ref.x);
     strokeWeight(1/dZ);
     tramos.draw();  
     cars.draw();
-    
+    //line(cars.cars.get(0).x, cars.cars.get(0).y, dX -ref.x, dX -ref.x);
     popMatrix();
    
     cars.displayInfo(tramos.focus, 10, 20, 255);
     cars.drawCurrentClassification(focus, width - 200, 20);
     cars.drawFinalClassification(focus, width - 100, 20);
   
+    drawInfo();
+}
+
+void drawInfo(){
+  pushStyle();
+  fill(255);
+  textSize(12);
+  text("Threshold: " + trackThreshold, width - 150, height - 100);
+  text("dZ: " + dZ, width - 150, height - 80);
+  popStyle();
 }
 

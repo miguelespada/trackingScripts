@@ -7,27 +7,8 @@ class Cars {
     cars = new ArrayList<Car>();
     
   }
-  void loadCars(String fileName){
-    this.fileName = fileName;
-    String lines[] = loadStrings(fileName);
-
-    try{
-      for (int i = 0 ; i < lines.length; i++) {
-         lines[i] = lines[i].replace(" ", "");
-         String[] tokens = splitTokens(lines[i], ",");
-         int id = int(tokens[0]);
-         String name = tokens[1];
-         String theColor = tokens[2];
-         Car c = new Car(id, name);
-         c.setColor(theColor);
-         add(c);
-         logFile.println("Car added: " + name + " " + id);
-      }
-    }
-    catch(Exception e){
-      logFile.println(e);
-      logFile.println("ERROR: reading cars");
-    }
+  void loadCars(){
+    mySql.loadCars();
     updateLeader();
   }
   
@@ -47,10 +28,10 @@ class Cars {
         else c.leader = false;
   }
 
-  void addData(int id, float x, float y, float s, int d) {
+  void addData(int id, float x, float y, float s, int d, String status) {
     for (Car c: cars) {
       if (c.id == id) {
-        c.addPoint(x, y, s, d);
+        c.addPoint(x, y, s, d, status);
         return;
       }
     }
@@ -86,6 +67,8 @@ class Cars {
   }
 
   void mouseClicked() {
+    if(keyCodes[SHIFT]) 
+      updateLeader();
     for(Car c: cars)
       c.mouseClicked();
     if(keyCodes[SHIFT]) 

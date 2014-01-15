@@ -98,6 +98,13 @@ class Tramos {
         t.subEnd();
   }
   
+  String getFocusName(){
+    for (Tramo t: tramos)
+      if(t.inFocus()) 
+        return t.name;
+    return "-";
+  }
+  
   
 }
 
