@@ -150,6 +150,8 @@ class Tramo {
     utm.setEnd(end);
     real.setStart(real.getClosest(utm.getStart()));
     real.setEnd(real.getClosest(utm.getEnd()) - real.size());
+    
+
   }
 
   boolean inFocus() {
@@ -199,23 +201,27 @@ class Tramo {
   void addStart() {
     start += 1;
     setStartEnd();
+        mySql.updateTramoStartEnd(name, start, end);
   }
 
   void addEnd() {
     end -= 1;
     setStartEnd();
+    mySql.updateTramoStartEnd(name, start, end);
   }
 
   void subStart() {
     start -= 1;
     if (start < 1) start = 1;
     setStartEnd();
+        mySql.updateTramoStartEnd(name, start, end);
   }
 
   void subEnd() {
     end += 1;
     if (end > -1) end = -1;
     setStartEnd();
+        mySql.updateTramoStartEnd(name, start, end);
   }
   String toString() {
     return name + "," + utm.fileName + "," + real.fileName + "," + start + "," + end;

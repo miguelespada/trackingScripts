@@ -20,14 +20,12 @@ void keyPressed() {
       else
         tramos.addEnd();
       
-      tramos.write();
     } 
     else if (keyCode == DOWN) {
       if(keyCodes[ALT] == false)
         tramos.subStart();
       else
         tramos.subEnd();
-      tramos.write();
   
     } 
     

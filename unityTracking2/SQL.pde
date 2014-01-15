@@ -49,6 +49,24 @@ class SQL {
     }
    
    }
+   
+   void loadTramos() {
+    msql.query( "SELECT * FROM tramos WHERE active = 1 ORDER BY id");
+    
+    while (msql.next ())
+    {
+         String root = msql.getString("prueba");
+         String tramoName = str(msql.getInt("id"));
+         String utm =  root + "/" + tramoName + "/" + tramoName + "_utm.txt";
+         String real = root + "/" + tramoName + "/" + tramoName + "_real.txt";
+         int start =  msql.getInt("start");
+         int end = -abs( msql.getInt("end"));
+         Tramo t = new Tramo(tramoName, utm, real, start, end);
+         tramos.add(t);
+         println("Tramo added: " + tramoName);
+     }
+   }
+   
   void process() {
     remote.query( "SELECT * FROM data WHERE processed = 0 order by id");
     ArrayList<sqlData> data = new ArrayList<sqlData>();
@@ -81,12 +99,19 @@ class SQL {
       return 0;
   }
   
-  void updateEnabled(int id, boolean v){
+ void updateEnabled(int id, boolean v){
     if(v)
       msql.execute( "UPDATE cars SET enabled = 1 WHERE carId ="+ str(id));
     else
       msql.execute( "UPDATE cars SET enabled = 0 WHERE carId ="+ str(id));
   }
+  
+  void updateTramoStartEnd(String id, int start, int end){
+    print("UPDATE tramos SET start = " + str(start) + " WHERE id ="+ id);
+      msql.execute( "UPDATE tramos SET start = " + str(start) + " WHERE id ="+ id);
+      msql.execute( "UPDATE tramos SET end = " + str(end) + " WHERE id ="+ id);
+  }
+   
    void updateInClassification(int id, boolean v){
     if(v)
       msql.execute( "UPDATE cars SET inClassification = 1 WHERE carId ="+ str(id));

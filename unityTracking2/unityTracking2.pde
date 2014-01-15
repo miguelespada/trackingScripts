@@ -46,7 +46,8 @@ void setup() {
 }
 
 void initSystem(){
-  tramos = new Tramos(host + "Tramos/montecarlo.txt");
+  tramos = new Tramos();
+  tramos.loadTramos();
   ref = tramos.setFocus(focus);
   println("REF: " + ref.x + " " + ref.y);
   cars = new Cars();
