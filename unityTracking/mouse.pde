@@ -1,6 +1,8 @@
 void mouseDragged() {
 
+  frameRate(30);
   lastActivity  =millis();
+  
   if (keyPressed && key == 'z') {
     dZ += (pmouseY - mouseY) / (height * 10.0);
     if (dZ <= 0.001) dZ = 0.001;
@@ -19,6 +21,6 @@ void mouseDragged() {
 void mouseClicked(){   
   frameRate(30);
   lastActivity  =millis();
-   cars.mouseClicked(); 
+  cars.mouseClicked(); 
 }
 

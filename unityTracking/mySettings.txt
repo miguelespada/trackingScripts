@@ -1,0 +1,7 @@
+trackThreshold 48
+host /Applications/MAMP/htdocs/unity/
+estela 20
+dZ 0.010571539
+dY -372.0293
+focus 0
+dX 893.4507

@@ -190,7 +190,7 @@ class Car {
       ellipse(x + ANCHO - 30 , y + 7, 8, 8);
       
     popStyle(); 
-    textSize(s * 0.8);
+    textSize(s * 0.9);
     textAlign(LEFT);
     
     text( id + " - " + name +  " " + status, x, y + s);

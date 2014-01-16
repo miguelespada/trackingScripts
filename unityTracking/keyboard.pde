@@ -10,6 +10,16 @@ void initializeKeys() {
     keyCodes[i] = false;
   }
 }
+void keyReleased() {
+
+  if (key == CODED && keyCode >=0 && keyCode < 255) 
+    keyCodes[keyCode] = false;
+  
+  else if (key >= 0 && key < 255) 
+    keys[key] = false;
+  
+}
+
 void keyPressed() {
   lastActivity  =millis();
   if (key == CODED && keyCode >=0 && keyCode < 255) {
@@ -26,10 +36,9 @@ void keyPressed() {
         tramos.subStart();
       else
         tramos.subEnd();
-  
     } 
-    
   }
+  
   else if (key >= 0 && key < 255) {
     keys[key] = true;
     if (key == '1') {
@@ -66,13 +75,5 @@ void keyPressed() {
     }
   }
 }
-void keyReleased() {
 
-  if (key == CODED && keyCode >=0 && keyCode < 255) 
-    keyCodes[keyCode] = false;
-  
-  else if (key >= 0 && key < 255) 
-    keys[key] = false;
-  
-}
 
