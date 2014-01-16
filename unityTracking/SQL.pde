@@ -105,7 +105,6 @@ class SQL {
   }
   
   void updateTramoStartEnd(String id, int start, int end){
-    print("UPDATE tramos SET start = " + str(start) + " WHERE id ="+ id);
       msql.execute( "UPDATE tramos SET start = " + str(start) + " WHERE id ="+ id);
       msql.execute( "UPDATE tramos SET end = " + str(end) + " WHERE id ="+ id);
   }

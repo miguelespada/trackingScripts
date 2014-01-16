@@ -67,12 +67,8 @@ class Cars {
   }
 
   void mouseClicked() {
-    if(keyCodes[SHIFT]) 
-      updateLeader();
     for(Car c: cars)
       c.mouseClicked();
-    if(keyCodes[SHIFT]) 
-      updateLeader();
   }
   
   void enable() {

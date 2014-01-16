@@ -1,6 +1,5 @@
 void mouseDragged() {
 
-  frameRate(30);
   lastActivity  =millis();
   
   if (keyPressed && key == 'z') {
@@ -19,7 +18,6 @@ void mouseDragged() {
   }
 }
 void mouseClicked(){   
-  frameRate(30);
   lastActivity  =millis();
   cars.mouseClicked(); 
 }

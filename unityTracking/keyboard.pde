@@ -65,6 +65,9 @@ void keyPressed() {
       initSystem();
       mySql.remove();
     }
+    if(key == 't'){
+       showAll = !showAll;
+    }
      if(key == 'R'){
         dX = 0;
         dY = 0;

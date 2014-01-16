@@ -45,7 +45,7 @@ class Tramos {
         t.draw(255);
       }
       else{
-        t.draw(50);
+        if(showAll) t.draw(50);
       }
       
     } 

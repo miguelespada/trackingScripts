@@ -6,7 +6,7 @@ class Car {
   PVector pos;
   int id; 
   float speed;
-  String status;
+  String status = "NO DATA";
   
   PVector tracks[];
   int idx;
@@ -235,11 +235,14 @@ class Car {
    void mouseClicked() {
      if(mouseX > x && mouseX < x + ANCHO && 
        mouseY > y && mouseY < y + ALTO){
-          if(keyCodes[SHIFT]) {
+          if(keyCodes[ALT]) {
+    
+            cars.updateLeader();
             leader = true;
             mySql.updateLeader(id);
+            cars.updateLeader();
           }
-          else if(keyCodes[ALT]){
+          else if(keyCodes[SHIFT]){
             inClassification = !inClassification;
             mySql.updateInClassification(id, inClassification);
           }
@@ -275,7 +278,5 @@ class Car {
       }
       return -1;
    }
-
-
 }  
 

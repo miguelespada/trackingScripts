@@ -13,13 +13,14 @@ int M;
 PrintWriter logFile;
 float lastActivity;
 SQL mySql, myRemoteSql;
+boolean showAll = false;
+
 void setup() {
   mySql = new SQL(new MySQL(this, "localhost:8889", "unity", "miguel", "miguel"),
                   new MySQL(this, "147.96.81.188", "unity", "root", "wtw6sb"));
 
 
   size(900, 700);
-  smooth();
   loadSettings();
 
   initializeKeys();
@@ -36,12 +37,7 @@ void setup() {
   logFile = new PrintWriter(new FileOutputStream(new File(host + "tracking.log"), true), true); 
   }
   catch(Exception e){}
-  logFile.println("--- new sesion --- "); 
-  
-  //setupOsc();
   initSystem();
-  
-  frameRate(30);
 }
 
 void initSystem(){
@@ -57,11 +53,11 @@ void initSystem(){
 
 void draw() {
     if(millis() > lastActivity + 10000){
-      background(25);    
+      background(50);    
       frameRate(1);
     }
     else{
-      frameRate(30);
+      frameRate(10);
       background(0);
     }
     mySql.process();
@@ -95,6 +91,7 @@ void drawInfo(){
   text("Threshold: " + trackThreshold + " m", 0, - 100);
   text("Session data: " + date, 0,  - 80);
   text("(" + ref.x + "," + ref.y + ")", 0,  - 60);
+  text(frameRate, 0,  - 40);
   popStyle();
 }
 
