@@ -10,7 +10,7 @@ class Car {
   
   PVector tracks[];
   int idx;
-  float time, pTime;
+  long time, pTime;
   int lastActiveFrame;
   boolean fresh;
   String name;
@@ -36,7 +36,7 @@ class Car {
   }
   
   
-  void addPoint(float x, float y, float s, int t, String status){
+  void addPoint(float x, float y, float s, long t, String status){
     if(time == t) return;
     fresh = true; 
     lastActiveFrame = frameCount;

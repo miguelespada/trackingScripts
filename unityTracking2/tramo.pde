@@ -43,7 +43,6 @@ class Track {
 
   void setEnd(int e) {
     endIndex = data.size() - 1 + e;
-    end = data.get(endIndex);
   }
   
   int getEndIndex(){

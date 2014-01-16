@@ -5,7 +5,7 @@ class sqlData {
   int carId;
   float x, y;
   float speed;
-  int time;
+  long  time;
   String status;
   sqlData() {
   }
@@ -31,7 +31,6 @@ class SQL {
     String date = getInitial();
     msql.query("DELETE FROM tracks WHERE 1");
     String q = "UPDATE data SET processed = 0 WHERE processed = 1 and timeStamp > '" + date + "'"  ;
-    println(q);
     remote.query(q);
   }
    void loadCars() {
@@ -78,7 +77,7 @@ class SQL {
       s.x = remote.getFloat("x"); 
       s.y = remote.getFloat("y"); 
       s.speed = remote.getFloat("speed"); 
-      s.time =  remote.getInt("time"); 
+      s.time = remote.getLong("time");
       s.status =  remote.getString("status");
       data.add(s);
     }

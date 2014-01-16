@@ -3,7 +3,7 @@ PVector ref;
 float dX;
 float dY;
 float dZ;
-
+String date;
 Cars cars; 
 Tramos tramos;
 int focus;
@@ -42,7 +42,6 @@ void setup() {
   initSystem();
   
   frameRate(30);
- 
 }
 
 void initSystem(){
@@ -53,6 +52,8 @@ void initSystem(){
   cars = new Cars();
   cars.registerTramos(tramos);
   cars.loadCars();
+  
+  date = mySql.getInitial();
 }
 
 void draw() {
@@ -89,9 +90,10 @@ void drawInfo(){
   pushStyle();
   fill(255);
   textSize(12);
-  text("Tramo: " + tramos.getFocusName(), width - 150, height - 60);
-  text("Threshold: " + trackThreshold, width - 150, height - 100);
-  text("dZ: " + dZ, width - 150, height - 120);
+  text("Tramo: " + tramos.getFocusName() + " (" + tramos.getFocusId() + "/" + tramos.size() + ")", width - 200, height - 140);
+  text("Resolution: " + int(width/(1000.0* dZ))  + " km", width - 200, height - 120);
+  text("Threshold: " + trackThreshold + " m", width - 200, height - 100);
+  text("Date: " + date, width - 200, height - 80);
   popStyle();
 }
 

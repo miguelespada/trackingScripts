@@ -28,7 +28,7 @@ class Cars {
         else c.leader = false;
   }
 
-  void addData(int id, float x, float y, float s, int d, String status) {
+  void addData(int id, float x, float y, float s, long d, String status) {
     for (Car c: cars) {
       if (c.id == id) {
         c.addPoint(x, y, s, d, status);

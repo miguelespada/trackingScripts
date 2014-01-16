@@ -79,6 +79,12 @@ class Tramos {
         return t.name;
     return "-";
   }
+  int getFocusId(){
+    for (Tramo t: tramos)
+      if(t.inFocus()) 
+        return t.id;
+    return -1;
+  }
   
   
 }
