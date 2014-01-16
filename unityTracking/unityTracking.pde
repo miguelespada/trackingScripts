@@ -75,8 +75,8 @@ void draw() {
     popMatrix();
    
     cars.displayInfo(tramos.focus, 10, 2, 255);
-    cars.drawCurrentClassification(focus, width - 200, 20);
-    cars.drawFinalClassification(focus, width - 100, 20);
+    cars.drawCurrentClassification(tramos.getFocusId(), width - 200, 20);
+    cars.drawFinalClassification(tramos.getFocusId(), width - 100, 20);
   
     drawInfo();
 }

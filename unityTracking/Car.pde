@@ -10,7 +10,7 @@ class Car {
   
   PVector tracks[];
   int idx;
-  long time, pTime;
+  int time, pTime;
   int lastActiveFrame;
   boolean fresh;
   String name;
@@ -36,7 +36,7 @@ class Car {
   }
   
   
-  void addPoint(float x, float y, float s, long t, String status){
+  void addPoint(float x, float y, float s, int t, String status){
     if(time == t) return;
     fresh = true; 
     lastActiveFrame = frameCount;
@@ -77,7 +77,7 @@ class Car {
         line(pos0.x, pos0.y, pos1.x, pos1.y);
     }
    
-    line(ref.x, ref.y, pos.x, pos.y);
+   //z line(ref.x, ref.y, pos.x, pos.y);
     
     fill(theColor);
     if(!enabled) fill(theColor, 100);

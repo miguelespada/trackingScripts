@@ -28,7 +28,7 @@ class Cars {
         else c.leader = false;
   }
 
-  void addData(int id, float x, float y, float s, long d, String status) {
+  void addData(int id, float x, float y, float s, int d, String status) {
     for (Car c: cars) {
       if (c.id == id) {
         c.addPoint(x, y, s, d, status);
@@ -119,6 +119,7 @@ class Cars {
     }
     return classification;
   }
+  
    ArrayList<Car> calculateFinalClassification(int tramoId) {
     ArrayList<Car> activeCars = getFinalizedCars(tramoId);
     ArrayList<Car> classification = new ArrayList<Car>();
@@ -136,6 +137,7 @@ class Cars {
     }
     return classification;
   }
+  
   void drawCurrentClassification(int tramoId, int x, int y) {
     ArrayList<Car> classification = calculateCurrentClassification(tramoId);
     pushStyle();

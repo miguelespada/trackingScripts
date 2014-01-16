@@ -5,7 +5,7 @@ class sqlData {
   int carId;
   float x, y;
   float speed;
-  long  time;
+  int  time;
   String status;
   sqlData() {
   }
@@ -76,14 +76,18 @@ class SQL {
       s.x = remote.getFloat("x"); 
       s.y = remote.getFloat("y"); 
       s.speed = remote.getFloat("speed"); 
-      s.time = remote.getLong("time");
-      s.status =  remote.getString("status");
-      data.add(s);
+      try{
+        s.time = int(remote.getString("time").substring(6, 10));
+        s.status =  remote.getString("status");
+        data.add(s);
+      }catch(Exception e){print(e);}
     }
+
     for (sqlData s: data) {
       cars.addData(s.carId, s.x, s.y, s.speed, s.time, s.status);
-      remote.execute( "UPDATE data SET processed = 1 WHERE id ="+ str(s.id));
+      print(s.carId + " ");
     }
+    remote.execute( "UPDATE data SET processed = 1");
   }
   void updateLeader(int id){
       msql.execute("UPDATE leader SET carId ="+ str(id) + " WHERE 1") ;

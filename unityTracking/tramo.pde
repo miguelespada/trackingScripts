@@ -68,10 +68,10 @@ class Track {
     pushStyle();
     fill(0, 255, 0);
     noStroke();
-    ellipse(start.pos.x, start.pos.y, 20, 20);
+    ellipse(start.pos.x, start.pos.y, 5/dZ, 5/dZ);
     fill(0, 255, 255);
     noStroke();
-    ellipse(end.pos.x, end.pos.y, 20, 20); 
+    ellipse(end.pos.x, end.pos.y, 5/dZ, 5/dZ); 
     popStyle();
   }
 
@@ -174,8 +174,8 @@ class Tramo {
   void draw(int opacity) {
     stroke(255, opacity);
     utm.draw();
-    stroke(255, 255, 0, opacity / 2);
-    real.draw();
+    //stroke(255, 255, 0, opacity / 2);
+    //real.draw();
   }
 
 
