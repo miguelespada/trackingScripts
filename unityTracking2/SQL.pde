@@ -62,7 +62,6 @@ class SQL {
          int end = -abs( msql.getInt("end"));
          Tramo t = new Tramo(tramoName, utm, real, start, end);
          tramos.add(t);
-         println("Tramo added: " + tramoName);
      }
    }
    

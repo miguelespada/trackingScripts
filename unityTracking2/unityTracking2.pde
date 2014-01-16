@@ -38,7 +38,7 @@ void setup() {
   catch(Exception e){}
   logFile.println("--- new sesion --- "); 
   
-  setupOsc();
+  //setupOsc();
   initSystem();
   
   frameRate(30);
@@ -48,7 +48,6 @@ void initSystem(){
   tramos = new Tramos();
   tramos.loadTramos();
   ref = tramos.setFocus(focus);
-  println("REF: " + ref.x + " " + ref.y);
   cars = new Cars();
   cars.registerTramos(tramos);
   cars.loadCars();
@@ -90,10 +89,12 @@ void drawInfo(){
   pushStyle();
   fill(255);
   textSize(12);
-  text("Tramo: " + tramos.getFocusName() + " (" + tramos.getFocusId() + "/" + tramos.size() + ")", width - 200, height - 140);
-  text("Resolution: " + int(width/(1000.0* dZ))  + " km", width - 200, height - 120);
-  text("Threshold: " + trackThreshold + " m", width - 200, height - 100);
-  text("Date: " + date, width - 200, height - 80);
+  translate(width - 300, height);
+  text("Tramo: " + tramos.getFocusName() + " (" + tramos.getFocusId() + "/" + tramos.size() + ")", 0, - 140);
+  text("Resolution: " + int(width/(1000.0* dZ))  + " km", 0, - 120);
+  text("Threshold: " + trackThreshold + " m", 0, - 100);
+  text("Session data: " + date, 0,  - 80);
+  text("(" + ref.x + "," + ref.y + ")", 0,  - 60);
   popStyle();
 }
 
