@@ -56,19 +56,25 @@ void keyPressed() {
       saveSetting("trackThreshold", trackThreshold);
     }
     
-    if (key == 'a')
+    else if (key == 'a')
          cars.enable();
-    if (key == 'A')
+    else if (key == 'A')
          cars.disable();
     
-    if(key == 'r'){
+    else if(key == 'r'){
       initSystem();
       mySql.remove();
     }
-    if(key == 't'){
+    else if(key == 'i'){
+      mySql.setInit(tramos.getFocusId());
+    }
+    else if(key == 'e'){
+      mySql.setEnd(tramos.getFocusId());
+    }
+    else if(key == 't'){
        showAll = !showAll;
     }
-     if(key == 'R'){
+    else if(key == 'R'){
         dX = 0;
         dY = 0;
         dZ = 0.05;

@@ -19,7 +19,7 @@ class Car {
   boolean inClassification = true;
   boolean leader = false;
   
-  ArrayList<TramoStatus> tramos;
+  ArrayList<TramoStatus> statuses;
 
 
   Car(int id, String name) {
@@ -32,7 +32,7 @@ class Car {
     pTime = 0;
     lastActiveFrame = -1;
     fresh = false;
-    tramos = new ArrayList<TramoStatus>();
+    statuses = new ArrayList<TramoStatus>();
   }
   
   
@@ -60,9 +60,14 @@ class Car {
   }
   
   void update(){
-    for (TramoStatus t: tramos) {
+    
+    for (TramoStatus t: statuses) {
       t.update();
+      if(t.t.id == tramos.getFocusId() ) {
+        enabled = t.running;
+      }
     }
+   
   }
   
    void draw() {
@@ -112,30 +117,30 @@ class Car {
   }
   
   boolean isInTramo(int tramoId){
-    for (TramoStatus t: tramos){
+    for (TramoStatus t: statuses){
       if (t.inTrack && t.t.id == tramoId) return true;
     }
     return false;
   }
   boolean finished(int tramoId){
-    for (TramoStatus t: tramos){
+    for (TramoStatus t: statuses){
       if (t.finish && t.t.id == tramoId) return true;
     }
     return false;
   }
   
   boolean inTrack() {
-    for (TramoStatus t: tramos)
+    for (TramoStatus t: statuses)
       if (t.inTrack) return true;
     return false;
   }
   void registerTramo(Tramo t) {
     TramoStatus tramo = new TramoStatus(this, t);
-    tramos.add(tramo);
+    statuses.add(tramo);
   }
   
   TramoStatus getTramoStatus(int id){
-    for (TramoStatus tt: tramos)  
+    for (TramoStatus tt: statuses)  
        if(tt.getId() == id)
          return tt;
     return null;
@@ -143,7 +148,7 @@ class Car {
   
   
   void drawLoop(){
-    for(TramoStatus t: tramos){
+    for(TramoStatus t: statuses){
        if(t.finish)
         t.drawLoop();
     } 
@@ -265,14 +270,14 @@ class Car {
      return s;
    }
    float getDistanceFromStart(int tramoId){
-      for (TramoStatus t: tramos){
+      for (TramoStatus t: statuses){
         if(t.t.id == tramoId)
           return t.getDistanceFromStart();
       }
       return -1;
    }
     float getTotalTime(int tramoId){
-      for (TramoStatus t: tramos){
+      for (TramoStatus t: statuses){
         if(t.t.id == tramoId)
           return t.getTotalTime();
       }

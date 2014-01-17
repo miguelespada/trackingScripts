@@ -94,4 +94,3 @@ void drawInfo(){
   text(frameRate, 0,  - 40);
   popStyle();
 }
-

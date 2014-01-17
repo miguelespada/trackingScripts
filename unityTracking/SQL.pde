@@ -1,5 +1,7 @@
 import de.bezier.data.sql.*;
 
+import java.sql.Timestamp;
+
 class sqlData {
   int id;
   int carId;
@@ -30,7 +32,7 @@ class SQL {
   void remove() {
     String date = getInitial();
     msql.query("DELETE FROM tracks WHERE 1");
-    String q = "UPDATE data SET processed = 0 WHERE processed = 1 and timeStamp > '" + date + "'"  ;
+    String q = "UPDATE data SET processed = 0 WHERE processed = 1 and timeStamp > '" + date + "'" ;
     remote.query(q);
   }
    void loadCars() {
@@ -131,12 +133,30 @@ class SQL {
   }
   
    String getInitial(){
-     msql.query( "SELECT init FROM settings");
+     msql.query( "SELECT initTime FROM settings");
      while (msql.next ())
       {
-        return msql.getString("init");
+        return msql.getString("initTime");
       }
      return "";
+  }
+   String getFinal(){
+     msql.query( "SELECT endTime FROM settings");
+     while (msql.next ())
+      {
+        return msql.getString("endTime");
+      }
+     return "";
+  }
+  void setInit(int id){
+	 java.util.Date date= new java.util.Date();
+	 Timestamp d = new Timestamp(date.getTime());
+         msql.execute( "UPDATE tramos SET initTime = '" + d.toString() + "' WHERE id ="+ id);
+  }
+  void setEnd(int id){
+	 java.util.Date date= new java.util.Date();
+	 Timestamp d = new Timestamp(date.getTime());
+         msql.execute( "UPDATE tramos SET endTime = '" + d.toString() + "' WHERE id ="+ id);
   }
 }
 
