@@ -32,8 +32,9 @@ class SQL {
     String iDate = getInitTime(tramos.getFocusName());
     String eDate = getInitTime(tramos.getFocusName());
     msql.query("DELETE FROM tracks WHERE 1");
-    String q = "UPDATE data SET processed = 0 WHERE timeStamp > '" + iDate + "' and timeStamp <= '" + eDate + "'" ;
+    String q = "UPDATE data SET processed = 0 WHERE timeStamp > '" + iDate+ "'" ;
     remote.query(q);
+    
   }
   
   
@@ -63,6 +64,7 @@ class SQL {
          int end = -abs( msql.getInt("end"));
          Tramo t = new Tramo(tramoName, utm, start, end);
          tramos.add(t);
+         
      }
    }
    
@@ -81,6 +83,7 @@ class SQL {
         s.time = int(remote.getString("time").substring(6, 10));
         s.status =  remote.getString("status");
         data.add(s);
+        print(s.id);
       }catch(Exception e){print(e);}
     }
 
