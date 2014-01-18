@@ -3,22 +3,20 @@ PVector ref;
 float dX;
 float dY;
 float dZ;
-String date;
+String iDate, eDate;
 Cars cars; 
 Tramos tramos;
 int focus;
 String host = "";
 int trackThreshold;
 int M;
-PrintWriter logFile;
-float lastActivity;
+float lastActivity, lastProcess;
 SQL mySql, myRemoteSql;
 boolean showAll = false;
 
 void setup() {
   mySql = new SQL(new MySQL(this, "localhost:8889", "unity", "miguel", "miguel"),
                   new MySQL(this, "147.96.81.188", "unity", "root", "wtw6sb"));
-
 
   size(900, 700);
   loadSettings();
@@ -32,11 +30,6 @@ void setup() {
   host = loadSetting("host", "");
   trackThreshold = loadSetting("trackThreshold", 30);
   M = loadSetting("estela", 10);
-  
-  try{
-  logFile = new PrintWriter(new FileOutputStream(new File(host + "tracking.log"), true), true); 
-  }
-  catch(Exception e){}
   initSystem();
 }
 
@@ -48,7 +41,6 @@ void initSystem(){
   cars.registerTramos(tramos);
   cars.loadCars();
   
-  date = mySql.getInitial();
 }
 
 void draw() {
@@ -57,14 +49,20 @@ void draw() {
       frameRate(1);
     }
     else{
-      frameRate(10);
+      frameRate(30);
       background(0);
     }
-    mySql.process();
+    if(millis() > lastProcess + 1000 && !keyPressed) {
+      mySql.process();
+      lastProcess = millis();
+      iDate = mySql.getInitTime(tramos.getFocusName());
+      eDate = mySql.getEndTime(tramos.getFocusName());
+    }
+    
     stroke(255);
     pushMatrix();
     
-   translate(width/2, height/2);
+    translate(width/2, height/2);
     scale(dZ);
     translate(-width/2, -height/2);
     scale(1, -1);
@@ -85,12 +83,16 @@ void drawInfo(){
   pushStyle();
   fill(255);
   textSize(12);
-  translate(width - 300, height);
+  translate(width - 300, height - 20);
   text("Tramo: " + tramos.getFocusName() + " (" + tramos.getFocusId() + "/" + tramos.size() + ")", 0, - 140);
   text("Resolution: " + int(width/(1000.0* dZ))  + " km", 0, - 120);
   text("Threshold: " + trackThreshold + " m", 0, - 100);
-  text("Session data: " + date, 0,  - 80);
-  text("(" + ref.x + "," + ref.y + ")", 0,  - 60);
-  text(frameRate, 0,  - 40);
+  
+  text("Session init: " + iDate, 0,  - 80);
+  text("Session end: " + eDate, 0,  - 60);
+  text("(start/end): " + "(" + ref.x + "," + ref.y + ")", 0,  - 40);
+  
+  text("Initial coords: " + "(" +  tramos.getFocusStart() + "," + tramos.getFocusEnd() + ")", 0,  - 20);
+  text(int(frameRate), 0,  0);
   popStyle();
 }

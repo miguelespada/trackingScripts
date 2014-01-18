@@ -9,7 +9,6 @@ class Cars {
   }
   void loadCars(){
     mySql.loadCars();
-    updateLeader();
   }
   
   void add(Car c) {
@@ -21,13 +20,7 @@ class Cars {
       for (Car c: cars)
         c.update();
   }
-   void updateLeader() {
-     int l = mySql.getLeader();
-      for (Car c: cars)
-        if(l == c.id) c.leader = true;
-        else c.leader = false;
-  }
-
+   
   void addData(int id, float x, float y, float s, int d, String status) {
     for (Car c: cars) {
       if (c.id == id) {
@@ -70,21 +63,6 @@ class Cars {
     for(Car c: cars)
       c.mouseClicked();
   }
-  
-  void enable() {
-    for(Car c: cars){
-      c.enabled = true;
-      mySql.updateEnabled(c.id, c.enabled);
-    }
-  }
-  
-  void disable() {
-    for(Car c: cars){
-      c.enabled = false;
-      mySql.updateEnabled(c.id, c.enabled);
-    }
-  }
-  
   
   ArrayList<Car> getRunningCars(int tramoId) {
     ArrayList<Car> active = new ArrayList<Car>();

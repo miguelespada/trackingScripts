@@ -16,8 +16,6 @@ class Car {
   String name;
   int x, y;
   boolean enabled = true;
-  boolean inClassification = true;
-  boolean leader = false;
   
   ArrayList<TramoStatus> statuses;
 
@@ -174,30 +172,10 @@ class Car {
     strokeWeight(2);
     rect(x - 5, y, ANCHO, ALTO-4);
     fill(0, opacity);
-    
-    pushStyle();
-    noStroke();
-    ellipseMode(CENTER);
-    if(enabled) 
-      fill(0, 255, 0);
-    else
-      fill(255, 0, 0);
-    ellipse(x + ANCHO - 10 , y + 7, 8, 8);
-    
-    if(inClassification) 
-      fill(0, 255, 0);
-    else
-      fill(255, 0, 0);
-    ellipse(x + ANCHO - 20 , y + 7, 8, 8);
-    
-     fill(255);
-    if(leader)
-      ellipse(x + ANCHO - 30 , y + 7, 8, 8);
-      
-    popStyle(); 
+  
     textSize(s * 0.9);
     textAlign(LEFT);
-    
+    if(!status.equals("WRC")) fill(150, 0, 0);
     text( id + " - " + name +  " " + status, x, y + s);
      
     pushStyle();
@@ -240,26 +218,8 @@ class Car {
    void mouseClicked() {
      if(mouseX > x && mouseX < x + ANCHO && 
        mouseY > y && mouseY < y + ALTO){
-          if(keyCodes[ALT]) {
-    
-            cars.updateLeader();
-            leader = true;
-            mySql.updateLeader(id);
-            cars.updateLeader();
-          }
-          else if(keyCodes[SHIFT]){
-            inClassification = !inClassification;
-            mySql.updateInClassification(id, inClassification);
-          }
-          else{
+          if(keyCodes[SHIFT])
             enabled = !enabled; 
-            mySql.updateEnabled(id, enabled);
-            
-            if(!enabled && inClassification) {
-              inClassification = false;
-              mySql.updateInClassification(id, inClassification);
-            }
-          }
      }
    }
    String toString(){

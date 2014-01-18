@@ -13,7 +13,7 @@ class LoopPoint {
     this.tramo = t;
   }
   String toString(){
-      String s = idx + "," + getRealIndex() + "," + int(time) + "," + (int(speed * 10) /10.0) + ",'" + status + "'," 
+      String s = idx + "," + idx + "," + int(time) + "," + (int(speed * 10) /10.0) + ",'" + status + "'," 
                 + int(getPos().x) + "," + int(getPos().y) 
                 + "," + int((getPos().x - ref.x)) 
                 + "," + int((getPos().y - ref.y));
@@ -24,11 +24,11 @@ class LoopPoint {
     return tramo.getUtmPoint(idx);
   }
   
-  int getRealIndex(){
-    return tramo.getRealIndex(idx);
+  float getDistanceFromStart(){
+    return tramo.getDistanceFromStart(idx);
   }
-  float getRealDistanceFromStart(){
-    return tramo.getRealDistanceFromStart(getRealIndex());
+  int getIndex(){
+    return idx;
   }
 }
 
@@ -66,12 +66,12 @@ class LoopTrack {
     
     String s = "";
     s += car.id;
-    s += "," + tramo.id;
+    s += "," + tramo.name;
     s += "," + last.toString();
     s += "," + int(avg * 10) / 10.0;
     s += "," + int(getTotalTime());
     s += "," + int(getDistanceFromStart());
-    s += "," + int((tramo.getRealTotalLength() - getDistanceFromStart()));
+    s += "," + int((tramo.getTotalLength() - getDistanceFromStart()));
     s += "," + int(error);
    
     if(last.status == "running")
@@ -92,12 +92,12 @@ class LoopTrack {
       if(prev.status.equals("start"))
         started = false;
         
-      for(int i = prev.getRealIndex() + 1; i < last.getRealIndex(); i ++){
-        if(tramo.getRealDistanceFromStart(i) < 0){
+      for(int i = prev.getIndex() + 1; i < last.getIndex(); i ++){
+        if(tramo.getDistanceFromStart(i) < 0){
           continue;
         }
          
-        float localDst = tramo.getRealDistanceFromStart(i) - prev.getRealDistanceFromStart();
+        float localDst = tramo.getDistanceFromStart(i) - prev.getDistanceFromStart();
         float localTime = (localDst/avg);
         float time = localTime + prev.time - loopTrack.get(0).time;
         
@@ -107,16 +107,16 @@ class LoopTrack {
            started = true;
         }
         
-        String s = car.id + "," + tramo.id ; 
+        String s = car.id + "," + tramo.name ; 
         s += "," + i;
         s += "," + (int(avg * 10)/10.0);
         s += "," + (int(time * 10) /10.0);
-        s += "," + int(tramo.getRealDistanceFromStart(i));
-        s += "," + int((tramo.getRealTotalLength() - tramo.getRealDistanceFromStart(i)));
+        s += "," + int(tramo.getDistanceFromStart(i));
+        s += "," + int((tramo.getTotalLength() - tramo.getDistanceFromStart(i)));
        
       mySql.insertTrack(s, false);
 
-        if(i >= tramo.getRealEndIndex()){
+        if(i >= tramo.getEndIndex()){
           last.time = time + loopTrack.get(0).time; //apagamos el cronometro
           break; 
         }
@@ -146,7 +146,7 @@ class LoopTrack {
   float getDistanceFromStart() {
     if(loopTrack == null) return 0;
     if(loopTrack.size() == 0) return 0;
-    return last.getRealDistanceFromStart();
+    return last.getDistanceFromStart();
   }
    
   float getTotalTime() {
@@ -159,7 +159,7 @@ class LoopTrack {
     if (loopTrack.size() > 1) {
       LoopPoint prev = loopTrack.get(loopTrack.size() - 2);
       if (last.time == prev.time) return 0;
-      return (last.getRealDistanceFromStart() - prev.getRealDistanceFromStart())/(last.time - prev.time);
+      return (last.getDistanceFromStart() - prev.getDistanceFromStart())/(last.time - prev.time);
     }
     else {
       return -1;

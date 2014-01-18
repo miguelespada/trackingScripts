@@ -42,7 +42,8 @@ class Track {
   }
 
   void setEnd(int e) {
-    endIndex = data.size() - 1 + e;
+    endIndex = data.size() -1 + e;
+    end = data.get(endIndex);
   }
   
   int getEndIndex(){
@@ -118,15 +119,14 @@ class Track {
 }
 
 class Tramo {
-  Track utm, real;
+  Track utm;
   boolean bFocus = false;
   int id = -1;
   String name = "";
   int start, end;
 
-  Tramo(String name, String utmFile, String realFile, int start, int end) {
+  Tramo(String name, String utmFile, int start, int end) {
     
-    logFile.println("Loading tramo: " +  name);
     utm = new Track();
     utm.loadData(utmFile);
     
@@ -135,11 +135,7 @@ class Tramo {
     
     this.start = start;
     this.end = end;
-    
-    
-    real = new Track();
-    real.loadData(realFile, utm.get(0));
-    
+   
     setStartEnd();
     this.name = name;
   }
@@ -147,12 +143,11 @@ class Tramo {
   void setStartEnd(){
     utm.setStart(start);
     utm.setEnd(end);
-    real.setStart(real.getClosest(utm.getStart()));
-    real.setEnd(real.getClosest(utm.getEnd()) - real.size());
-    
-
   }
-
+  void setId(int id) {
+    this.id = id;
+  }
+ 
   boolean inFocus() {
     return bFocus;
   }
@@ -160,9 +155,6 @@ class Tramo {
     bFocus = b;
   }
 
-  void setId(int id) {
-    this.id = id;
-  }
 
   PVector getStart() {
     return utm.getStart();
@@ -174,8 +166,6 @@ class Tramo {
   void draw(int opacity) {
     stroke(255, opacity);
     utm.draw();
-    //stroke(255, 255, 0, opacity / 2);
-    //real.draw();
   }
 
 
@@ -186,21 +176,10 @@ class Tramo {
   PVector getUtmPoint(int i) {
     return utm.get(i);
   }
-  int getRealIndex(int idx){
-    return real.getClosest(utm.get(idx));
-  }
-  
-  float getRealDistanceFromStart(int i) {
-    return real.getDistanceFromStart(i);
-  }
-  float getRealTotalLength() {
-    return real.getTotalLength();
-  }
-  
   void addStart() {
     start += 1;
     setStartEnd();
-        mySql.updateTramoStartEnd(name, start, end);
+    mySql.updateTramoStartEnd(name, start, end);
   }
 
   void addEnd() {
@@ -220,11 +199,9 @@ class Tramo {
     end += 1;
     if (end > -1) end = -1;
     setStartEnd();
-        mySql.updateTramoStartEnd(name, start, end);
+    mySql.updateTramoStartEnd(name, start, end);
   }
-  String toString() {
-    return name + "," + utm.fileName + "," + real.fileName + "," + start + "," + end;
-  }
+  
   
   int getEndIndex(){
     return utm.getEndIndex();
@@ -233,14 +210,12 @@ class Tramo {
   int getStartIndex(){
     return utm.getStartIndex();
   }
-  
-   int getRealEndIndex(){
-    return real.getEndIndex();
-  }
-  
-  int getRealStartIndex(){
-    return utm.getStartIndex();
+  float getDistanceFromStart(int i) {
+    return utm.getDistanceFromStart(i);
   }
 
+ float getTotalLength() {
+    return utm.getTotalLength();
+ }
 }
 

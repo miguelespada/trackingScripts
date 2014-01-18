@@ -11,6 +11,7 @@ class Tramos {
   void add(Tramo t) {
     t.setId(tramos.size());
     tramos.add(t);
+
   }
   
   PVector setFocus(int i) {
@@ -71,6 +72,18 @@ class Tramos {
     for (Tramo t: tramos)
       if(t.inFocus())  
         t.subEnd();
+  }
+  int getFocusStart(){
+    for (Tramo t: tramos)
+      if(t.inFocus()) 
+        return t.start;
+    return -1;
+  }
+  int getFocusEnd(){
+    for (Tramo t: tramos)
+      if(t.inFocus()) 
+        return t.end;
+    return -1;
   }
   
   String getFocusName(){
