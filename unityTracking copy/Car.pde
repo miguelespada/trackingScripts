@@ -7,7 +7,6 @@ class Car {
   int id; 
   float speed;
   String status = "NO DATA";
-  TramoStatus ts;
   
   PVector tracks[];
   int idx;
@@ -16,14 +15,14 @@ class Car {
   boolean fresh;
   String name;
   int x, y;
+  boolean enabled = true;
   
+  ArrayList<TramoStatus> statuses;
+
+
   Car(int id, String name) {
     this.name = name;
     this.id = id;
-    reset();
-  }
-  
-  void reset(){
     this.pos = new PVector(0, 0);
     tracks = new PVector[M];
     idx = 0;
@@ -31,9 +30,9 @@ class Car {
     pTime = 0;
     lastActiveFrame = -1;
     fresh = false;
-    if(ts != null)
-      ts.reset();
+    statuses = new ArrayList<TramoStatus>();
   }
+  
   
   void addPoint(float x, float y, float s, int t, String status){
     if(time == t) return;
@@ -54,14 +53,22 @@ class Car {
   }
 
   void setColor(String c) {
+    
     theColor = unhex("FF" + c);
   }
   
   void update(){
-      ts.update();
+    
+    for (TramoStatus t: statuses) {
+      t.update();
+      if(t.t.id == tramos.getFocusId() ) {
+        enabled = t.running;
+      }
+    }
+   
   }
   
-  void draw() {
+   void draw() {
     pushStyle();
      for (int i = 0; i < M - 1; i ++) {
       int p0 = (idx + i) % M;
@@ -73,9 +80,11 @@ class Car {
         line(pos0.x, pos0.y, pos1.x, pos1.y);
     }
    
+   //z line(ref.x, ref.y, pos.x, pos.y);
     
     fill(theColor);
-    if (ts.inTrack) stroke(255);
+    if(!enabled) fill(theColor, 100);
+    if (inTrack()) stroke(255);
     else noStroke();
 
     ellipseMode(CENTER);
@@ -101,19 +110,61 @@ class Car {
     map(i, 0, M - 1, 50, 255) );
   }
   
-  void registerTramo(Tramo t) {
-    ts = new TramoStatus(this, t);
+  float dist(PVector p){
+    return this.pos.dist(p);
   }
   
-  int drawInfo(int x, int y, int opacity) {
+  boolean isInTramo(int tramoId){
+    for (TramoStatus t: statuses){
+      if (t.inTrack && t.t.id == tramoId) return true;
+    }
+    return false;
+  }
+  boolean finished(int tramoId){
+    for (TramoStatus t: statuses){
+      if (t.finish && t.t.id == tramoId) return true;
+    }
+    return false;
+  }
+  
+  boolean inTrack() {
+    for (TramoStatus t: statuses)
+      if (t.inTrack) return true;
+    return false;
+  }
+  void registerTramo(Tramo t) {
+    TramoStatus tramo = new TramoStatus(this, t);
+    statuses.add(tramo);
+  }
+  
+  TramoStatus getTramoStatus(int id){
+    for (TramoStatus tt: statuses)  
+       if(tt.getId() == id)
+         return tt;
+    return null;
+  }
+  
+  
+  void drawLoop(){
+    for(TramoStatus t: statuses){
+       if(t.finish)
+        t.drawLoop();
+    } 
+  }
+ 
+  
+  int drawInfo(int tramoId, int x, int y, int opacity) {
     this.x = x;
     this.y = y;
     int s = ALTO/5;
     
+    TramoStatus t = getTramoStatus(tramoId);
     int idle = int((frameCount - lastActiveFrame)/frameRate);
     
-    if(ts == null) return -1;
+    if(t == null)
+      return -1;
     pushStyle();
+    
     
     fill(255 - constrain((idle * 3), 0, 100), 200);
       
@@ -125,20 +176,20 @@ class Car {
     textSize(s * 0.9);
     textAlign(LEFT);
     if(!status.equals("WRC")) fill(150, 0, 0);
-    text( id + " - " + name  + " tramo: " + ts.t.id +  " " + status, x, y + s);
+    text( id + " - " + name +  " " + status, x, y + s);
      
     pushStyle();
    
     String status = "";
-    if (ts.finish){
+    if (t.finish){
       status = "DONE";    
       fill(0, 255, 0, opacity);
     }
-    else if(ts.running){
+    else if(t.running){
       status = "RUNNING";
       fill(255, 255, 0, opacity);
     }
-    else if(ts.inTrack){
+    else if(t.inTrack){
       status = "WAITING";
       fill(0, 255, 255, opacity);
     }
@@ -147,21 +198,44 @@ class Car {
       fill(0, opacity);
     }
     text("SPEED: " + int(speed) + "km/h " + "STATUS: " + status, x, y + 2*s);
-    
     popStyle(); 
-    float dst =  ts.getDistanceFromStart(); 
-    
+  
+    float dst =  t.getDistanceFromStart();   
     if(status != "OUT"){
       text("DIST: " + int(dst), x, y + s * 3);
     }
     if(status == "RUNNING" || status == "DONE"){
-      float cTime = ts.getTotalTime();
-      text("TIME: " + int(cTime)/60 + ":" + int(cTime)%60  + " AVG: " + int(dst/cTime) + " m/s", x, y + s * 4);
+      float cTime = t.getTotalTime();
+      text("TIME: " + int(cTime) + " AVG: " + int(dst/cTime) + " m/s", x, y + s * 4);
+      
     }
-    
+  
     popStyle();
     
     return ALTO;
   }
+  
+ 
+   String toString(){
+     String s = "";
+     s += str(id) + ",";
+     s += name + ",";
+     s += hex(theColor).substring(2,8);
+     return s;
+   }
+   float getDistanceFromStart(int tramoId){
+      for (TramoStatus t: statuses){
+        if(t.t.id == tramoId)
+          return t.getDistanceFromStart();
+      }
+      return -1;
+   }
+    float getTotalTime(int tramoId){
+      for (TramoStatus t: statuses){
+        if(t.t.id == tramoId)
+          return t.getTotalTime();
+      }
+      return -1;
+   }
 }  
 

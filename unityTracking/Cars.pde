@@ -1,26 +1,27 @@
-
 class Cars {
   ArrayList<Car> cars;
-  Tramos ts; 
-  String fileName;
+  Tramo tramo;
+  
   Cars() {
     cars = new ArrayList<Car>();
-    
   }
+  
+  void reset(){
+    for (Car c: cars) c.reset();
+  }
+  
   void loadCars(){
-    mySql.loadCars();
+    mysql.loadCars();
   }
   
   void add(Car c) {
     cars.add(c);
-    registerTramo(c, ts);
   }
 
   void update() {
-      for (Car c: cars)
-        c.update();
+     for (Car c: cars) c.update();
   }
-   
+
   void addData(int id, float x, float y, float s, int d, String status) {
     for (Car c: cars) {
       if (c.id == id) {
@@ -36,109 +37,104 @@ class Cars {
       c.draw();
   }
 
-  void registerTramos(Tramos ts) {
-    this.ts = ts;
+  void registerTramo(Tramo t) {
+    this.tramo = t;
+    for (Car c: cars)      
+      c.registerTramo(tramo);
   }
 
-  void registerTramo(Car c, Tramos ts) {
-    for (Tramo t: ts.tramos)
-      c.registerTramo(t);
-  }
-
-  void displayInfo(int tramoId, int x, int y, int opacity) {
+  void displayInfo(int x, int y, int opacity) {
     for (Car c: cars) {
-      int nextY = y + c.drawInfo(tramoId, x, y, opacity);
+      int nextY = y + c.drawInfo(x, y, opacity);
       y = nextY;
     }
   }
   
+  ArrayList<Car> getRunningCars() {
+    ArrayList<Car> active = new ArrayList<Car>();
+    for (Car c: cars) if (c.ts.running) active.add(c);
+    return active;
+  }
   
+  ArrayList<Car> calculateCurrentClassification() {
+    ArrayList<Car> activeCars = getRunningCars();
+    ArrayList<Car> classification = new ArrayList<Car>();
+    
+    for (Car c: activeCars) {
+      int i = 0;
+      float d = c.ts.getDistanceFromStart();
+      while (i < classification.size ()) {
+        if (d > classification.get(i).ts.getDistanceFromStart())
+          break;
+        else
+          i ++;
+      }
+      classification.add(i, c);
+    }
+    return classification;
+  }
   
-  void drawLoop(){
-     for (Car c: cars)
-       c.drawLoop();
+  void drawCurrentClassification(int x, int y) {
+    ArrayList<Car> classification = calculateCurrentClassification();
+    pushStyle();
+    stroke(255);
+    fill(255);
+    textSize(10);
+    String s = "" ;
+    for (Car c: classification) {      
+      float cTime = c.ts.getTotalTime();
+      float dst = c.ts.getDistanceFromStart();
+      s += c.id + "   " + int(dst) + "m, " + int(cTime)/60 + ":" + int(cTime)%60 + ", " + int((dst/cTime) * 3.6) + " km/h";
+      s += "\n";
+    }
+    text(s, x, y);
+    popStyle();
+  }
+  
+   ArrayList<Car> getFinalizedCars() {
+    ArrayList<Car> active = new ArrayList<Car>();
+    for (Car c: cars) 
+      if (c.ts.finish)  active.add(c);
+    
+    return active;
+  }  
+    
+   ArrayList<Car> calculateFinalClassification() {
+    ArrayList<Car> activeCars = getFinalizedCars();
+    ArrayList<Car> classification = new ArrayList<Car>();
+    
+    for (Car c: activeCars) {
+      int i = 0;
+      float d = c.ts.getTotalTime();
+      while (i < classification.size ()) {
+        if (d < classification.get(i).ts.getTotalTime())
+          break;
+        else
+          i ++;
+      }
+      classification.add(i, c);
+    }
+    return classification;
+  }
+  
+ 
+   void drawFinalClassification(int x, int y) {
+    ArrayList<Car> classification = calculateFinalClassification();
+    pushStyle();
+    stroke(255);
+    fill(255);
+    textSize(10);
+    String s = "" ;
+    for (Car c: classification) {
+      float cTime = c.ts.getTotalTime();
+      float dst = c.ts.getDistanceFromStart();
+      s += c.id + " " + int(cTime)/60 + ":" + int(cTime)%60 + ", " + int((dst/cTime) * 3.6) + " km/h";
+      s += "\n";
+    }
+    text(s, x, y);
+    popStyle();
   }
 
   
-  ArrayList<Car> getRunningCars(int tramoId) {
-    ArrayList<Car> active = new ArrayList<Car>();
-    for (Car c: cars) {
-      if (c.isInTramo(tramoId))
-        active.add(c);
-    }
-    return active;
-  }
-   ArrayList<Car> getFinalizedCars(int tramoId) {
-    ArrayList<Car> active = new ArrayList<Car>();
-    for (Car c: cars) {
-      if (c.finished(tramoId))
-        active.add(c);
-    }
-    return active;
-  }  
-  ArrayList<Car> calculateCurrentClassification(int tramoId) {
-    ArrayList<Car> activeCars = getRunningCars(tramoId);
-    ArrayList<Car> classification = new ArrayList<Car>();
-    
-    for (Car c: activeCars) {
-      int i = 0;
-      float d = c.getDistanceFromStart(tramoId);
-      while (i < classification.size ()) {
-        if (d > classification.get(i).getDistanceFromStart(tramoId))
-          break;
-        else
-          i ++;
-      }
-      classification.add(i, c);
-    }
-    return classification;
-  }
-  
-   ArrayList<Car> calculateFinalClassification(int tramoId) {
-    ArrayList<Car> activeCars = getFinalizedCars(tramoId);
-    ArrayList<Car> classification = new ArrayList<Car>();
-    
-    for (Car c: activeCars) {
-      int i = 0;
-      float d = c.getTotalTime(tramoId);
-      while (i < classification.size ()) {
-        if (d < classification.get(i).getTotalTime(tramoId))
-          break;
-        else
-          i ++;
-      }
-      classification.add(i, c);
-    }
-    return classification;
-  }
-  
-  void drawCurrentClassification(int tramoId, int x, int y) {
-    ArrayList<Car> classification = calculateCurrentClassification(tramoId);
-    pushStyle();
-    stroke(255);
-    fill(255);
-    textSize(10);
-    String s = "" ;
-    for (Car c: classification) {
-      s += c.id + "   " + int(c.getDistanceFromStart(tramoId));
-      s += " m \n";
-    }
-    text(s, x, y);
-    popStyle();
-  }
-   void drawFinalClassification(int tramoId, int x, int y) {
-    ArrayList<Car> classification = calculateFinalClassification(tramoId);
-    pushStyle();
-    stroke(255);
-    fill(255);
-    textSize(10);
-    String s = "" ;
-    for (Car c: classification) {
-      s += c.id + "   " + int(c.getTotalTime(tramoId) * 10) /10.0;
-      s += " s \n";
-    }
-    text(s, x, y);
-    popStyle();
-  }
 }
 

@@ -1,99 +1,116 @@
-PVector ref;
-
 float dX;
 float dY;
 float dZ;
-String iDate, eDate;
+
+SQL mysql;
 
 Cars cars; 
 Tramos tramos;
-int focus;
+RealTime rt;
+
 String host = "";
 int trackThreshold;
-int M;
-float lastActivity, lastProcess;
-SQL mySql, myRemoteSql;
-boolean showAll = false;
+int M = 20;
+
+
+float lastActivity;
+float lastProcess;
 
 void setup() {
-  mySql = new SQL(new MySQL(this, "localhost:8889", "unity", "miguel", "miguel"),
-                  new MySQL(this, "147.96.81.188", "unity", "root", "wtw6sb"));
 
   size(900, 700);
-  loadSettings();
-
-  initializeKeys();
-  
-  dX = loadSetting("dX", 0);
-  dY = loadSetting("dY", 0);
-  dZ = loadSetting("dZ", 0.05);
-  focus = loadSetting("focus", 0);
-  host = loadSetting("host", "");
-  trackThreshold = loadSetting("trackThreshold", 30);
-  M = loadSetting("estela", 10);
+  initServices();
   initSystem();
 }
 
-void initSystem(){
-  tramos = new Tramos();
-  tramos.loadTramos();
-  ref = tramos.setFocus(focus);
+void initServices() {
+
+  loadSettings();
+  try {
+    mysql = new SQL(new MySQL(this, 
+    loadSetting("localDBhost", ""), 
+    loadSetting("localDBname", ""), 
+    loadSetting("localDBuser", ""), 
+    loadSetting("localDBpass", "")), 
+    new MySQL(this, 
+    loadSetting("remoteDBhost", ""), 
+    loadSetting("remoteDBname", ""), 
+    loadSetting("remoteDBuser", ""), 
+    loadSetting("remoteDBpass", "")));
+  }
+  catch(Exception e) {
+    println(e);
+  }
+
+
+  dX = loadSetting("dX", 0);
+  dY = loadSetting("dY", 0);
+  dZ = loadSetting("dZ", 0.05);
+  host = loadSetting("host", "");
+  trackThreshold = loadSetting("trackThreshold", 30);
+  initializeKeys();
+}
+
+void initSystem() {
   cars = new Cars();
-  cars.registerTramos(tramos);
   cars.loadCars();
   
+  tramos = new Tramos();
+  tramos.registerCars(cars);
+  
+  tramos.setTramo(loadSetting("focus", 0));
+  rt = new RealTime();
 }
 
 void draw() {
-    if(millis() > lastActivity + 10000){
-      background(50);    
-      frameRate(1);
-    }
-    else{
-      frameRate(30);
-      background(0);
-    }
-    if(millis() > lastProcess + 1000 && !keyPressed) {
-      mySql.process();
+  if (millis() > lastActivity + 20000) {
+    background(50);    
+    frameRate(1);
+  }
+  else {
+    frameRate(30);
+    background(0);
+  }
+  if(millis() > lastProcess + 2000 && !keyPressed && keyCodes[SHIFT] == false) {
+      mysql.process();
       lastProcess = millis();
-      iDate = mySql.getInitTime(tramos.getFocusName());
-      eDate = mySql.getEndTime(tramos.getFocusName());
-    }
-    
-    stroke(255);
-    pushMatrix();
-    
-    translate(width/2, height/2);
-    scale(dZ);
-    translate(-width/2, -height/2);
-    scale(1, -1);
-    translate(dX - ref.x, dY - ref.y);
-    strokeWeight(1/dZ);
-    tramos.draw();  
-    cars.draw();
-    popMatrix();
-   
-    cars.displayInfo(tramos.focus, 10, 2, 255);
-    cars.drawCurrentClassification(tramos.getFocusId(), width - 200, 20);
-    cars.drawFinalClassification(tramos.getFocusId(), width - 100, 20);
+  }
+
+  pushMatrix();
+  translate(width/2, height/2);
+  scale(dZ);
+  translate(-width/2, -height/2);
+  scale(1, -1);
+  translate(dX-tramos.getX(), dY-tramos.getY());
+
+  strokeWeight(1/dZ);
+  tramos.draw();  
+  cars.draw();
+  popMatrix();
   
-    drawInfo();
+  pushMatrix();
+  
+  cars.displayInfo(10, 2, 255);
+  popMatrix();
+  
+  cars.drawCurrentClassification(255, 100);
+  cars.drawFinalClassification(width - 150, 100);
+
+  tramos.drawInfo(width - 300, height - 200);
+  drawInfo(255, 20);
+  
 }
 
-void drawInfo(){
+void drawInfo(int x, int y){
   pushStyle();
   fill(255);
   textSize(12);
-  translate(width - 300, height - 20);
-  text("Tramo: " + tramos.getFocusName() + " (" + tramos.getFocusId() + "/" + tramos.size() + ")", 0, - 140);
-  text("Resolution: " + int(width/(1000.0* dZ))  + " km", 0, - 120);
-  text("Threshold: " + trackThreshold + " m", 0, - 100);
-  
-  text("Session init: " + iDate, 0,  - 80);
-  text("Session end: " + eDate, 0,  - 60);
-  text("(start/end): " + "(" + ref.x + "," + ref.y + ")", 0,  - 40);
-  
-  text("Initial coords: " + "(" +  tramos.getFocusStart() + "," + tramos.getFocusEnd() + ")", 0,  - 20);
-  text(int(frameRate), 0,  0);
+  translate(x, y);
+  text("Center: (" + int(dX) + " / " + int(dY) + " / " + int(dZ*10000) + ")", 0, 0);
+  text("fps: " + int(frameRate), 0,  20);
+  text("Resolution: " + int(width/(1000.0* dZ))  + " km", 0,  40);
+    text("In Track Threshold: " + trackThreshold + " m", 0, 60);
+
   popStyle();
 }
+

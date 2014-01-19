@@ -1,63 +1,69 @@
 class TramoPoint {
   PVector pos;
   float dst;
-
   TramoPoint(PVector pos, float dst) {
     this.dst = dst;
     this.pos = pos;
   }
 }
 
-class Track {
+class Tramo {
+  int id = -1;
+  String prueba;
   ArrayList<TramoPoint> data;
-  TramoPoint end, start;
-  float totalDst = -1;
-  String fileName;
-  int startIndex, endIndex;
-  Track() {
-  }
+  int start, end;
+  java.util.Date initTime, endTime;
 
-  void loadData(String fileName, PVector ref) {
-    this.fileName = host + "Tramos/"+ fileName;
-    String lines[] = loadStrings(this.fileName);
-    float dst = 0;
-    data = new ArrayList<TramoPoint>();
-    for (int i = 0 ; i < lines.length; i++) {
-      String[] tokens = splitTokens(lines[i]);
-      PVector pos = new PVector(float(tokens[1]) + ref.x, float(tokens[0]) + ref.y);
-      if (i > 1)
-        dst += data.get(i - 1).pos.dist(pos);
-      data.add(new TramoPoint(pos, dst));
-    }
-    if (lines.length > 0) {
-      start = data.get(0);
-      end = data.get(data.size() - 1);
-    }
-    this.totalDst = dst;
-  }
-
-  void setStart(int s) {
-    startIndex = s;
-    start = data.get(startIndex);
-  }
-
-  void setEnd(int e) {
-    endIndex = data.size() -1 + e;
-    end = data.get(endIndex);
-  }
-  
-  int getEndIndex(){
-    return endIndex;
-  }
-  int getStartIndex(){
-    return startIndex;
+  Tramo(String prueba, int id, String fileName, int start, int end, String initTime, String endTime) {
+    loadData(fileName);
+    this.id = id;
+    this.prueba = prueba;
+    this.start = start;
+    this.end = end;
+    updateStartEnd();
+    if(initTime == null) 
+      setInitTime();
+    else
+      this.initTime = new Date(Timestamp.valueOf(initTime).getTime());
+    
+    if(endTime == null)
+      setEndTime();
+    else
+      this.endTime = new Date(Timestamp.valueOf(endTime).getTime());
   }
 
   void loadData(String fileName) {
-    loadData(fileName, new PVector(0, 0));
+    String lines[] = loadStrings(host + "Tramos/"+ fileName);
+    float dst = 0;
+    data = new ArrayList<TramoPoint>();
+    PVector pos, pPos = null;
+    for (int i = 0 ; i < lines.length; i++) {
+      String[] tokens = splitTokens(lines[i]);
+      pos = new PVector(float(tokens[1]), float(tokens[0]));
+      if (pPos != null) dst += pos.dist(pPos);
+      else dst = 0;
+      pPos = pos;
+      data.add(new TramoPoint(pos, dst));
+    }
+    println(fileName + " loaded");
   }
-
+  void drawInfo(int x, int y){
+    pushStyle();
+    fill(255);
+    textSize(12);
+    pushMatrix();
+    translate(x, y);
+    text("Tramo Id: " + prueba + " " + id, 0, 0);
+    text("Longitud: " + int(getTotalLength()) + " m, " + int(getRealLength()) + " m", 0, 20);
+    text("UTM coords: (" + getX() + " / " + getY() + ")", 0, 40);
+    text("Init time: " + initTime, 0,  60);
+    text("End time: " + endTime, 0,  80);
+    popMatrix();
+    popStyle();
+  }
+  
   void draw() {
+    stroke(255);
     for (int i = 0 ; i < data.size() - 1; i++) {
       float x0 = data.get(i).pos.x;
       float y0 = data.get(i).pos.y;
@@ -66,156 +72,103 @@ class Track {
       point(x0, y0);
       line(x0, y0, x1, y1);
     }
+    
     pushStyle();
     fill(0, 255, 0);
     noStroke();
-    ellipse(start.pos.x, start.pos.y, 5/dZ, 5/dZ);
+    ellipse(getStart().pos.x,getStart().pos.y, 5/dZ, 5/dZ);
     fill(0, 255, 255);
     noStroke();
-    ellipse(end.pos.x, end.pos.y, 5/dZ, 5/dZ); 
+    ellipse(getEnd().pos.x ,getEnd().pos.y, 5/dZ, 5/dZ); 
     popStyle();
+
+  }
+  
+  float getTotalLength(){
+     return data.get(data.size() - 1).dst;
+  }
+  
+  float getRealLength(){
+    return getEnd().dst - getStart().dst;
+  }
+  
+  float getX(){
+    return data.get(0).pos.x;
+  }
+  
+  float getY(){
+    return data.get(0).pos.y;
+  }
+   void addStart(int i) {
+    start += i;
+    updateStartEnd();
   }
 
-  PVector getStart() {
-    return start.pos;
+  void addEnd(int i) {
+    end -= i;
+    updateStartEnd();
+  }
+  
+  TramoPoint getStart() {
+    return data.get(start);
   }
 
-  PVector getEnd() {
-    return end.pos;
+  TramoPoint getEnd() {
+    return data.get(data.size() -1 + end);
   }
-
+  
+   void updateStartEnd(){
+      if (start < 1) start = 1;
+      if (end > -1) end = -1;
+      
+      mysql.updateTramoStartEnd(id, start, end);
+  }
+  
+  void setInitTime(){	 
+      java.util.Date date= new java.util.Date();  
+      initTime = new Timestamp(date.getTime());
+      mysql.setInit(id, initTime.toString());
+  }
+  
+  void setEndTime(){
+      java.util.Date date= new java.util.Date();  
+      endTime = new Timestamp(date.getTime());
+      mysql.setEnd(id, endTime.toString());
+  }
+   java.util.Date getInitTime(){
+    return initTime;
+  }
+  
+   java.util.Date getEndTime(){
+    return endTime;
+  }
+  
   int getClosest(PVector pos) {
     float minDist = 10000000;
-    int proyection = -1;
+    int idx = -1;
     int i = 0;
     for (TramoPoint p: data) {
       float d = pos.dist(p.pos);
       if (d < minDist) {
-        proyection = i;
+        idx = i;
         minDist = d;
       }
       i ++;
     }
-    return proyection;
-  }
-  PVector get(int i) {
-    return data.get(i).pos;
-  }
-
-  int size() {
-    return data.size();
-  }
-  
-  float getDistance(int i) {
-    return data.get(i).dst;
-  }
-  
-  float getDistanceFromStart(int i) {
-    return data.get(i).dst - start.dst;
-  }
-  float getTotalLength() {
-    return end.dst - start.dst;
-  }
-}
-
-class Tramo {
-  Track utm;
-  boolean bFocus = false;
-  int id = -1;
-  String name = "";
-  int start, end;
-
-  Tramo(String name, String utmFile, int start, int end) {
-    
-    utm = new Track();
-    utm.loadData(utmFile);
-    
-    if (start < 1) start = 1;
-    if (end > -1) end = -1;
-    
-    this.start = start;
-    this.end = end;
-   
-    setStartEnd();
-    this.name = name;
-  }
-  
-  void setStartEnd(){
-    utm.setStart(start);
-    utm.setEnd(end);
-  }
-  void setId(int id) {
-    this.id = id;
-  }
- 
-  boolean inFocus() {
-    return bFocus;
-  }
-  void setFocus(boolean b) {
-    bFocus = b;
-  }
-
-
-  PVector getStart() {
-    return utm.getStart();
-  }
-  PVector getEnd() {
-    return utm.getEnd();
-  }
-
-  void draw(int opacity) {
-    stroke(255, opacity);
-    utm.draw();
-  }
-
-
-  int getClosest(PVector pos) {
-    return utm.getClosest(pos);
-  }
-
-  PVector getUtmPoint(int i) {
-    return utm.get(i);
-  }
-  void addStart() {
-    start += 1;
-    setStartEnd();
-    mySql.updateTramoStartEnd(name, start, end);
-  }
-
-  void addEnd() {
-    end -= 1;
-    setStartEnd();
-    mySql.updateTramoStartEnd(name, start, end);
-  }
-
-  void subStart() {
-    start -= 1;
-    if (start < 1) start = 1;
-    setStartEnd();
-        mySql.updateTramoStartEnd(name, start, end);
-  }
-
-  void subEnd() {
-    end += 1;
-    if (end > -1) end = -1;
-    setStartEnd();
-    mySql.updateTramoStartEnd(name, start, end);
-  }
-  
-  
-  int getEndIndex(){
-    return utm.getEndIndex();
+    return idx;
   }
   
   int getStartIndex(){
-    return utm.getStartIndex();
+    return start;
+  }
+   int getEndIndex(){
+    return data.size() - 1 + end;
+  }
+   PVector get(int i) {
+    return data.get(i).pos;
   }
   float getDistanceFromStart(int i) {
-    return utm.getDistanceFromStart(i);
+    return data.get(i).dst - getStart().dst;
   }
-
- float getTotalLength() {
-    return utm.getTotalLength();
- }
 }
 

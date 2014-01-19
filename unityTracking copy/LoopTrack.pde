@@ -12,17 +12,16 @@ class LoopPoint {
     this.idx = proyectionIndex;
     this.tramo = t;
   }
-  
   String toString(){
       String s = idx + "," + idx + "," + int(time) + "," + (int(speed * 10) /10.0) + ",'" + status + "'," 
                 + int(getPos().x) + "," + int(getPos().y) 
-                + "," + int((getPos().x - tramo.getX())) 
-                + "," + int((getPos().y - tramo.getY()));
+                + "," + int((getPos().x - ref.x)) 
+                + "," + int((getPos().y - ref.y));
                 
       return s;
   }
   PVector getPos(){
-    return tramo.get(idx);
+    return tramo.getUtmPoint(idx);
   }
   
   float getDistanceFromStart(){
@@ -51,16 +50,9 @@ class LoopTrack {
     accError = 0;
   }
   
-  boolean checkAvgSpeed(int proyectionIndex, float time, float speed){
-    last = new LoopPoint(tramo, proyectionIndex, time, speed, "none");
-    float avg = calculateAvgSpeedOfLastPeriod();
-    return avg < 40 && avg >= 10;
-  }
-  
   void add(int proyectionIndex, float time, float speed, String status) {
     speed = speed * 1000/3600;
     last = new LoopPoint(tramo, proyectionIndex, time, speed, status);
-    float avg = calculateAvgSpeedOfLastPeriod();
     loopTrack.add(last);
     writePoint(last); 
   }
@@ -68,13 +60,13 @@ class LoopTrack {
   
   
   void writePoint(LoopPoint last){
-    float error = car.pos.dist(last.getPos());
+    float error = car.dist(last.getPos());
     
     float avg = calculateAvgSpeedOfLastPeriod();
-   
+    
     String s = "";
     s += car.id;
-    s += "," + str(tramo.id);
+    s += "," + tramo.name;
     s += "," + last.toString();
     s += "," + int(avg * 10) / 10.0;
     s += "," + int(getTotalTime());
@@ -85,7 +77,7 @@ class LoopTrack {
     if(last.status == "running")
       accError += error;
     
-    mysql.insertTrack(s, true);
+    mySql.insertTrack(s, true);
      
     
     writeInterpolation(avg);
@@ -115,14 +107,14 @@ class LoopTrack {
            started = true;
         }
         
-        String s = car.id + "," + str(tramo.id) ; 
+        String s = car.id + "," + tramo.name ; 
         s += "," + i;
         s += "," + (int(avg * 10)/10.0);
         s += "," + (int(time * 10) /10.0);
         s += "," + int(tramo.getDistanceFromStart(i));
         s += "," + int((tramo.getTotalLength() - tramo.getDistanceFromStart(i)));
        
-        mysql.insertTrack(s, false);
+      mySql.insertTrack(s, false);
 
         if(i >= tramo.getEndIndex()){
           last.time = time + loopTrack.get(0).time; //apagamos el cronometro
@@ -152,11 +144,13 @@ class LoopTrack {
   } 
   
   float getDistanceFromStart() {
+    if(loopTrack == null) return 0;
     if(loopTrack.size() == 0) return 0;
     return last.getDistanceFromStart();
   }
    
   float getTotalTime() {
+    if(loopTrack == null) return 0;
     if(loopTrack.size() == 0) return 0;
     return last.time - loopTrack.get(0).time;
   }

@@ -1,104 +1,92 @@
+
+
 class Tramos {
-  ArrayList<Tramo> tramos;
-  int focus = -1;
+  int n;
+  int focus;
+  Tramo tramo;
+  Cars cars;
   
   Tramos() {
-    tramos = new ArrayList<Tramo>();
-  }
-  void loadTramos(){
-    mySql.loadTramos();
-  }
-  void add(Tramo t) {
-    t.setId(tramos.size());
-    tramos.add(t);
-
+    this.n = mysql.loadTramos();
   }
   
-  PVector setFocus(int i) {
-    if(i >= tramos.size()) 
-      i = 0;
-    this.focus = i;
-    PVector r = null; 
-    for (Tramo t: tramos) {
-      if (t.id == focus) {
-        t.setFocus(true);
-        r = t.getStart();
-      }
-      else {
-        t.setFocus(false);
-      }
+  void setTramo(int i) {
+    if(n == 0) {
+      tramo = null;
+      println("[ERROR] no existen tramos;");
+      return;
     }
-    return r;
+    if(i >= n) i = 0;
+    else this.focus = i;
+    loadTramo(focus);
+    rt = new RealTime();
+    cars.registerTramo(tramo);
   }
   
-  PVector nextFocus() {
-    focus = (focus + 1) % tramos.size();
-    return setFocus(focus);
+  void loadTramo(int i){
+    tramo = mysql.loadTramo(i);
+    
+  }
+  
+  void changeFocus(int i) {
+    focus = (focus + i) % n;
+    if(focus < 0) focus = n - 1;
+    setTramo(focus);
   }
   
   int size(){
-    return tramos.size();
+     return n;
+  }
+  void drawInfo(int x, int y){
+    pushStyle();
+    fill(255);
+    textSize(12);
+    pushMatrix();
+    translate(x, y);
+    text("Tramos: (" + focus + "/" + n + ")", 0, 0);
+    text("Elapsed: " + rt.getElapsed(), 0, 20);
+    popMatrix();
+    popStyle();
+    
+    tramo.drawInfo(x, y + 40);
+  }
+  float getX(){
+    return tramo.getX();
   }
   
-  void draw() {
-    for (Tramo t: tramos){
-      if(t.inFocus()){
-        t.draw(255);
-      }
-      else{
-        if(showAll) t.draw(50);
-      }
-      
-    } 
+  float getY(){
+    return tramo.getY();
   }
-  void addStart(){
-    for (Tramo t: tramos)
-      if(t.inFocus())  
-        t.addStart();
+  void draw(){
+    tramo.draw();
   }
-  
-  void addEnd(){
-    for (Tramo t: tramos)
-      if(t.inFocus())  
-        t.addEnd();
+   void addStart(int i) {
+    tramo.addStart(i);
   }
-   void subStart(){
-    for (Tramo t: tramos)
-      if(t.inFocus())  
-        t.subStart();
+
+  void addEnd(int i) {
+    tramo.addEnd(i);
+  }
+  void setInitTime(){
+    tramo.setInitTime();
   }
   
-  void subEnd(){
-    for (Tramo t: tramos)
-      if(t.inFocus())  
-        t.subEnd();
+  void setEndTime(){
+    tramo.setEndTime();
   }
-  int getFocusStart(){
-    for (Tramo t: tramos)
-      if(t.inFocus()) 
-        return t.start;
-    return -1;
+  long getInitTime(){
+    return tramo.getInitTime().getTime();
   }
-  int getFocusEnd(){
-    for (Tramo t: tramos)
-      if(t.inFocus()) 
-        return t.end;
-    return -1;
+   long getEndTime(){
+    return tramo.getEndTime().getTime();
   }
   
-  String getFocusName(){
-    for (Tramo t: tramos)
-      if(t.inFocus()) 
-        return t.name;
-    return "-";
+  long getTotalTime(){
+    return  tramo.getEndTime().getTime() - tramo.getInitTime().getTime();
   }
-  int getFocusId(){
-    for (Tramo t: tramos)
-      if(t.inFocus()) 
-        return t.id;
-    return -1;
+  void registerCars(Cars cars){
+     this.cars = cars;
+    
   }
-  
-  
 }
 

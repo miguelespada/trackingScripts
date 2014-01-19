@@ -1,4 +1,3 @@
-
 boolean keys[];
 boolean keyCodes[];
 
@@ -10,66 +9,34 @@ void initializeKeys() {
     keyCodes[i] = false;
   }
 }
-void keyReleased() {
 
+void keyReleased() {
   if (key == CODED && keyCode >=0 && keyCode < 255) 
     keyCodes[keyCode] = false;
   
   else if (key >= 0 && key < 255) 
     keys[key] = false;
-  
 }
 
 void keyPressed() {
   lastActivity  =millis();
-  if (key == CODED && keyCode >=0 && keyCode < 255) {
+ 
+  if (key == CODED && keyCode >=0 && keyCode < 255) 
     keyCodes[keyCode] = true;
-    if (keyCode == UP) {
-      if(keyCodes[ALT] == false)
-        tramos.addStart();
-      else
-        tramos.addEnd();
-    } 
-    else if (keyCode == DOWN) {
-      if(keyCodes[ALT] == false)
-        tramos.subStart();
-      else
-        tramos.subEnd();
-    } 
+    
+  if (key >= 0 && key < 255) 
+    keys[key] = true;
+  
+  if (key == '1') {
+    tramos.changeFocus(1);
+    saveSetting("focus", tramos.focus);
   }
   
-  else if (key >= 0 && key < 255) {
-    keys[key] = true;
-    if (key == '1') {
-      ref = tramos.nextFocus();
-      saveSetting("focus", tramos.focus);
-    }
-    
-     if (key == '0') {
-      trackThreshold += 1;
-      saveSetting("trackThreshold", trackThreshold);
-    }
-    
-     if (key == '9') {
-      trackThreshold -= 1;
-      saveSetting("trackThreshold", trackThreshold);
-    }
-    
-    
-    else if(key == 'r'){
-      initSystem();
-      mySql.remove();
-    }
-    else if(key == 'i'){
-      mySql.setInit(tramos.getFocusName());
-    }
-    else if(key == 'e'){
-      mySql.setEnd(tramos.getFocusName());
-    }
-    else if(key == 't'){
-       showAll = !showAll;
-    }
-    else if(key == 'R'){
+  if (key == '2') {
+    tramos.changeFocus(-1);
+    saveSetting("focus", tramos.focus);
+  }
+  if(key == 'R'){
         dX = 0;
         dY = 0;
         dZ = 0.05;
@@ -77,7 +44,50 @@ void keyPressed() {
         saveSetting("dY", dY);
         saveSetting("dZ", dZ);
     }
-  }
+    
+    if (key == CODED && keyCode == UP) {
+      if(keyCodes[ALT] == false)
+        tramos.addStart(-1);
+      else
+        tramos.addEnd(1);
+    } 
+    else if (key == CODED &&  keyCode == DOWN) {
+      if(keyCodes[ALT] == false)
+        tramos.addStart(1);
+      else
+        tramos.addEnd(-1);
+    } 
+    else if(key == 'I')
+      tramos.setInitTime();
+    
+    else if(key == 'E')
+      tramos.setEndTime();
+    else if(key == 'q')
+      rt.toggle();
+    else if(key == 'a')
+      rt.reset();
+    else if(key == 'm')
+      rt.offset(10);
+    else if(key == 'M')
+      rt.offset(30);
+    else if(key == 'A')
+      rt.setEnd();
+    else if(key == 'r'){
+      cars.reset();
+      mysql.remove();
+      rt.running = false;
+    }
+     else if (key == '0') {
+      trackThreshold += 1;
+      saveSetting("trackThreshold", trackThreshold);
+    }
+    
+     else if (key == '9') {
+      trackThreshold -= 1;
+      saveSetting("trackThreshold", trackThreshold);
+    }
+    
+    
 }
 
 
