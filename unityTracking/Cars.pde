@@ -59,10 +59,6 @@ class Cars {
        c.drawLoop();
   }
 
-  void mouseClicked() {
-    for(Car c: cars)
-      c.mouseClicked();
-  }
   
   ArrayList<Car> getRunningCars(int tramoId) {
     ArrayList<Car> active = new ArrayList<Car>();

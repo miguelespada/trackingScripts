@@ -19,6 +19,5 @@ void mouseDragged() {
 }
 void mouseClicked(){   
   lastActivity  =millis();
-  cars.mouseClicked(); 
 }
 

@@ -215,13 +215,7 @@ class Car {
     return ALTO;
   }
   
-   void mouseClicked() {
-     if(mouseX > x && mouseX < x + ANCHO && 
-       mouseY > y && mouseY < y + ALTO){
-          if(keyCodes[SHIFT])
-            enabled = !enabled; 
-     }
-   }
+ 
    String toString(){
      String s = "";
      s += str(id) + ",";

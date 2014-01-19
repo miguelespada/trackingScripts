@@ -30,9 +30,10 @@ class SQL {
   }
   void remove() {
     String iDate = getInitTime(tramos.getFocusName());
-    String eDate = getInitTime(tramos.getFocusName());
+    String eDate = getEndTime(tramos.getFocusName());
     msql.query("DELETE FROM tracks WHERE 1");
-    String q = "UPDATE data SET processed = 0 WHERE timeStamp > '" + iDate+ "'" ;
+    String q = "UPDATE data SET processed = 0 WHERE timeStamp > '" + iDate+ "' " + " and  timeStamp < '" + eDate+ "'" ;
+   
     remote.query(q);
     
   }
@@ -69,7 +70,7 @@ class SQL {
    }
    
   void process() {
-    remote.query( "SELECT * FROM data WHERE processed = 0 order by id");
+    remote.query( "SELECT * FROM data WHERE processed = 0");
     ArrayList<sqlData> data = new ArrayList<sqlData>();
     while (remote.next ())
     {
@@ -102,19 +103,30 @@ class SQL {
  
   
   String getInitTime(String name){
-     msql.query( "SELECT initTime FROM tramos WHERE id = "+ name);
+     try{
+       msql.query( "SELECT initTime FROM tramos WHERE id = "+ name);
      while (msql.next ())
       {
         return msql.getString("initTime");
       }
-     return "";
+     }
+     catch(Exception e){
+       setInit(name);
+     }
+    return "";
+  
   }
    String getEndTime(String name){
+     try{
      msql.query( "SELECT endTime FROM tramos WHERE id = "+ name);
      while (msql.next ())
       {
         return msql.getString("endTime");
       }
+     }
+      catch(Exception e){
+       setEnd(name);
+     }
      return "";
   }
   

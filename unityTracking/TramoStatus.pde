@@ -55,10 +55,8 @@ class TramoStatus {
   void update() {
     if(finish) return;
     pProyection = proyection;
-    int pp = updateProyection(car.pos);
-    if(pp <= proyection) return;
-    proyection = pp;
-    if(proyection == pProyection) return;
+    proyection =updateProyection(car.pos);
+    if(proyection <= pProyection) return;
     inTrack = updateInTrack();
     
     if (!running) {
