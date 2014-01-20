@@ -82,21 +82,26 @@ class SQL {
     println(q);
     remote.query(q);
   }
+  void removeTracks(){
+    String q = "DELETE FROM tracks WHERE tramoId = " + str(tramos.tramo.id);
+     msql.query(q);
+     println(q);
+
+  }
   
-  void removeDiferido() {
+  void updateDiferido() {
     String iDate =  rt.getPrevElapsed();
     String eDate =  rt.getElapsed();
     rt.setPrevElapsed(eDate);
-    msql.query("DELETE FROM tracks WHERE tramoId = " + str(tramos.tramo.id));
     String q = "UPDATE data SET processed = 0 WHERE timeStamp > '" + iDate+ "' " + " and  timeStamp < '" + eDate+ "'" ;
-    println(q);
+    
+     println(q);
     remote.query(q);
   }
   
   void process() {
     if(rt.running)
-      removeDiferido();
-    
+      updateDiferido();
     remote.query( "SELECT count(*) as n FROM data WHERE processed = 0");
     
     while (remote.next ()){
