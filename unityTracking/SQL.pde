@@ -22,7 +22,7 @@ class SQL {
     println("Connected to remote DB");
   }
   void loadCars() {
-    msql.query( "SELECT * FROM cars ORDER BY carId");
+    msql.query( "SELECT * FROM cars  WHERE active = 1 ORDER BY carId");
     while (msql.next ())
     {
         int id = msql.getInt("carId");
@@ -115,8 +115,12 @@ class SQL {
       s.y = remote.getFloat("y"); 
       s.speed = remote.getFloat("speed"); 
       try{
-        s.time = int(remote.getString("time").substring(6, 10));
-      }catch(Exception e){print(e);}
+        s.time = int(remote.getString("time").substring(5, 10));
+      }catch(Exception e){
+        s.time = int(remote.getString("time"));
+        print(e);
+        continue;
+      }
       s.status =  remote.getString("status");
       data.add(s);
     }
@@ -125,6 +129,7 @@ class SQL {
       cars.addData(s.carId, s.x, s.y, s.speed, s.time, s.status);
     
     remote.execute( "UPDATE data SET processed = 1");
+    
   }
   
   void insertTrack(String s, boolean full) {
@@ -132,6 +137,14 @@ class SQL {
       msql.query("INSERT INTO tracks VALUES (" + s  + ")");  
     else
       msql.query("INSERT INTO tracks (CarId, TramoId, realIndex, avgSpeed, trackTime, trackDistance, remainingDistance) VALUES (" + s  + ")");
+  }
+  void insertResult(int carId, int tramoId, float time){
+    String q = "DELETE FROM results WHERE tramoId = " + str(tramoId) + " and carId = " + str(carId);
+    msql.query(q);
+    String s = str(carId) + "," + str(tramoId) + "," + str(time) + ",'" + int(time)/60 + ":" + int(time)%60 + "'"; 
+    q = "INSERT INTO results (CarId, TramoId, time, timeString) VALUES (" + s + ")";
+    msql.query(q);
+
   }
 }
 

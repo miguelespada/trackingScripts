@@ -43,7 +43,6 @@ class Tramos {
     textSize(12);
     pushMatrix();
     translate(x, y);
-    text("Tramos: (" + focus + "/" + n + ")", 0, 0);
     text("Elapsed: " + rt.getElapsed(), 0, 20);
     popMatrix();
     popStyle();

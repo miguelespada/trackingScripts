@@ -36,7 +36,7 @@ void keyPressed() {
     tramos.changeFocus(-1);
     saveSetting("focus", tramos.focus);
   }
-  if(key == 'R'){
+  if(key == 'C'){
         dX = 0;
         dY = 0;
         dZ = 0.05;
@@ -59,7 +59,6 @@ void keyPressed() {
     } 
     else if(key == 'I')
       tramos.setInitTime();
-    
     else if(key == 'E')
       tramos.setEndTime();
     else if(key == 'q')
@@ -67,24 +66,26 @@ void keyPressed() {
     else if(key == 'a')
       rt.reset();
     else if(key == 'm')
-      rt.offset(10);
-    else if(key == 'M')
       rt.offset(30);
+    else if(key == 'M')
+      rt.offset(60);
     else if(key == 'A')
       rt.setEnd();
-    else if(key == 'r'){
+    else if(key == 'R'){
       cars.reset();
       mysql.remove();
       rt.running = false;
     }
-     else if (key == '0') {
+     else if (key == '9') {
       trackThreshold += 1;
       saveSetting("trackThreshold", trackThreshold);
     }
-    
-     else if (key == '9') {
+    else if (key == '0') {
       trackThreshold -= 1;
       saveSetting("trackThreshold", trackThreshold);
+    }
+     else if (key == ' ') {
+       bProcess = !bProcess;
     }
     
     

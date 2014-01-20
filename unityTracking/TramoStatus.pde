@@ -55,7 +55,7 @@ class TramoStatus {
     if(finish) return;
     pProyection = proyection;
     proyection = updateProyection(car.pos);
-    if(proyection <= pProyection) 
+    if(proyection < pProyection) 
       return;
     
     if(running && !loopTrack.checkAvgSpeed(proyection, car.time, car.speed))
@@ -78,6 +78,7 @@ class TramoStatus {
         loopTrack.add(proyection, car.time, car.speed, "ended");
         inTrack = false;
         running = false;
+        mysql.insertResult(car.id, t.id,  getTotalTime());
       }
       else{
         loopTrack.add(proyection, car.time, car.speed, "running");

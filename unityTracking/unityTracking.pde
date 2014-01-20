@@ -15,6 +15,7 @@ int M = 20;
 
 float lastActivity;
 float lastProcess;
+boolean bProcess = false;
 
 void setup() {
 
@@ -72,7 +73,12 @@ void draw() {
     background(0);
   }
   if(millis() > lastProcess + 2000 && !keyPressed && keyCodes[SHIFT] == false) {
-      mysql.process();
+      if(bProcess){
+       
+    
+        mysql.process();
+        
+      }
       lastProcess = millis();
   }
 
@@ -93,8 +99,8 @@ void draw() {
   cars.displayInfo(10, 2, 255);
   popMatrix();
   
-  cars.drawCurrentClassification(255, 100);
-  cars.drawFinalClassification(width - 150, 100);
+  cars.drawCurrentClassification(255, 120);
+  cars.drawFinalClassification(width - 150, 120);
 
   tramos.drawInfo(width - 300, height - 200);
   drawInfo(255, 20);
@@ -106,11 +112,16 @@ void drawInfo(int x, int y){
   fill(255);
   textSize(12);
   translate(x, y);
-  text("Center: (" + int(dX) + " / " + int(dY) + " / " + int(dZ*10000) + ")", 0, 0);
-  text("fps: " + int(frameRate), 0,  20);
-  text("Resolution: " + int(width/(1000.0* dZ))  + " km", 0,  40);
-    text("In Track Threshold: " + trackThreshold + " m", 0, 60);
+  text("Center: (" + int(dX) + " / " + int(dY) + " / " + int(dZ*10000) + ")", 0, 20);
+  text("fps: " + int(frameRate), 0,  40);
+  text("Resolution: " + int(width/(1000.0* dZ))  + " km", 0,  60);
+    text("In Track Threshold: " + trackThreshold + " m", 0, 80);
 
+  noStroke();
+  fill(255, 0, 0);
+  if(bProcess) 
+    fill(0, 255, 0);
+  ellipse(7.5, 0, 15, 15);
   popStyle();
 }
 

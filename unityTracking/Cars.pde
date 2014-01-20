@@ -83,6 +83,10 @@ class Cars {
     String s = "" ;
     for (Car c: classification) {      
       float cTime = c.ts.getTotalTime();
+     /*if(cTime < 0 ){
+       println(c.id + " " + cTime + " " + c.ts.loopTrack.last.time + " " + c.ts.loopTrack.loopTrack.get(0).time);
+       exit();
+     } */
       float dst = c.ts.getDistanceFromStart();
       s += c.id + "   " + int(dst) + "m, " + int(cTime)/60 + ":" + int(cTime)%60 + ", " + int((dst/cTime) * 3.6) + " km/h";
       s += "\n";
