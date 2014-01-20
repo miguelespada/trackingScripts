@@ -3,12 +3,12 @@ host /Applications/MAMP/htdocs/unity/
 localDBpass miguel
 remoteDBname unity
 remoteDBpass wtw6sb
-dZ 0.027428567
-dY -4100.625
-dX 11111.667
+dZ 0.024428578
+dY -1964.9121
+dX 10602.337
 localDBhost localhost:8889
 remoteDBuser root
 localDBname unity
 trackThreshold 50
-focus 0
+focus 8
 localDBuser miguel

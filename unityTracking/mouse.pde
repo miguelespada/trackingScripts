@@ -1,6 +1,6 @@
 void mouseDragged() {
   lastActivity  =millis();
-  if (keyPressed && key == 'z') {
+  if(keyCodes[ALT]){
     dZ += (pmouseY - mouseY) / (height * 10.0);
     if (dZ <= 0.001) dZ = 0.001;
     saveSetting("dZ", dZ);

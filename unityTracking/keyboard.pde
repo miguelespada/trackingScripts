@@ -27,37 +27,41 @@ void keyPressed() {
   if (key >= 0 && key < 255) 
     keys[key] = true;
   
-  if (key == '1') {
-    tramos.changeFocus(1);
-    saveSetting("focus", tramos.focus);
-  }
-  
-  if (key == '2') {
-    tramos.changeFocus(-1);
-    saveSetting("focus", tramos.focus);
-  }
-  if(key == 'C'){
-        dX = 0;
+  if (key == CODED && keyCode == UP) {
+      if(keys['e']) tramos.addEnd(1);
+      if(keys['i']) tramos.addStart(1);
+      if(keys['t']) {
+        trackThreshold += 1;
+        saveSetting("trackThreshold", trackThreshold);
+      }
+      if(keys['1']) {
+        tramos.changeFocus(1);
+        saveSetting("focus", tramos.focus);
+         dX = 0;
         dY = 0;
-        dZ = 0.05;
         saveSetting("dX", dX);
         saveSetting("dY", dY);
-        saveSetting("dZ", dZ);
-    }
-    
-    if (key == CODED && keyCode == UP) {
-      if(keyCodes[ALT] == false)
-        tramos.addStart(-1);
-      else
-        tramos.addEnd(1);
+      }
     } 
     else if (key == CODED &&  keyCode == DOWN) {
-      if(keyCodes[ALT] == false)
-        tramos.addStart(1);
-      else
-        tramos.addEnd(-1);
+      if(keys['e']) tramos.addEnd(-1);
+      if(keys['i']) tramos.addStart(-1);
+      if(keys['t']) {
+        trackThreshold -= 1;
+        saveSetting("trackThreshold", trackThreshold);
+      }
+      if(keys['1']) {
+        tramos.changeFocus(-1);
+        saveSetting("focus", tramos.focus); 
+        dX = 0;
+        dY = 0;
+        saveSetting("dX", dX);
+        saveSetting("dY", dY);
+      }
     } 
-    else if(key == 'I')
+    
+    
+    if(key == 'I')
       tramos.setInitTime();
     else if(key == 'E')
       tramos.setEndTime();
@@ -66,25 +70,24 @@ void keyPressed() {
     else if(key == 'a')
       rt.reset();
     else if(key == 'm')
-      rt.offset(30);
+      rt.offset(10);
     else if(key == 'M')
       rt.offset(60);
-    else if(key == 'A')
-      rt.setEnd();
     else if(key == 'R'){
       cars.reset();
       mysql.remove();
       rt.running = false;
     }
-     else if (key == '9') {
-      trackThreshold += 1;
-      saveSetting("trackThreshold", trackThreshold);
+     if(key == 'C'){
+        dX = 0;
+        dY = 0;
+        dZ = 0.05;
+        saveSetting("dX", dX);
+        saveSetting("dY", dY);
+        saveSetting("dZ", dZ);
     }
-    else if (key == '0') {
-      trackThreshold -= 1;
-      saveSetting("trackThreshold", trackThreshold);
-    }
-     else if (key == ' ') {
+    
+   if (key == ' ') {
        bProcess = !bProcess;
     }
     

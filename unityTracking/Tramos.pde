@@ -38,16 +38,16 @@ class Tramos {
      return n;
   }
   void drawInfo(int x, int y){
+    tramo.drawInfo(x, y);
     pushStyle();
     fill(255);
     textSize(12);
     pushMatrix();
     translate(x, y);
-    text("Elapsed: " + rt.getElapsed(), 0, 20);
+    text("Elapsed: " + rt.getElapsed(), 0, 120);
     popMatrix();
     popStyle();
     
-    tramo.drawInfo(x, y + 40);
   }
   float getX(){
     return tramo.getX();

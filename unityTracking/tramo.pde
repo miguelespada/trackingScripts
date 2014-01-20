@@ -53,8 +53,10 @@ class Tramo {
     textSize(12);
     pushMatrix();
     translate(x, y);
-    text("Tramo Id: " + prueba + " " + id, 0, 0);
-    text("Longitud: " + int(getTotalLength()) + " m, " + int(getRealLength()) + " m", 0, 20);
+    fill(120, 155, 249);
+    text(prueba + " " + id, 0, 0);
+    fill(255);
+    text("Longitud: " +  int(getRealLength()) + " / " + int(getTotalLength()), 0, 20);
     text("UTM coords: (" + getX() + " / " + getY() + ")", 0, 40);
     text("Init time: " + initTime, 0,  60);
     text("End time: " + endTime, 0,  80);
