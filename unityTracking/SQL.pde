@@ -75,8 +75,10 @@ class SQL {
   }
   
   void remove() {
-    String iDate =  (new Timestamp(tramos.getInitTime())).toString();
-    String eDate =  (new Timestamp(tramos.getEndTime())).toString();
+   
+    String iDate =  tramos.initDate();
+    String eDate =  tramos.endDate();
+    
     msql.query("DELETE FROM tracks WHERE tramoId = " + str(tramos.tramo.id));
     String q = "UPDATE data SET processed = 0 WHERE timeStamp > '" + iDate+ "' " + " and  timeStamp < '" + eDate+ "'" ;
     println(q);
@@ -100,17 +102,22 @@ class SQL {
   }
   
   void process() {
-    if(rt.running)
-      updateDiferido();
-    remote.query( "SELECT count(*) as n FROM data WHERE processed = 0");
+    if(rt.running) updateDiferido();
+    
+    String iDate =  tramos.initDate();
+    String eDate =  tramos.endDate();
+    remote.query( "SELECT count(*) as n FROM data WHERE processed = 0 and timeStamp > '" 
+                + iDate+ "' " + " and  timeStamp < '" + eDate+ "'" );
     
     while (remote.next ()){
       int total = remote.getInt("n");
       println("Processing... " + total + " rows");
       break;
     }
-    
-    remote.query( "SELECT * FROM data WHERE processed = 0");
+    String q = "SELECT * FROM data WHERE processed = 0 and timeStamp > '" 
+                    + iDate+ "' " + " and  timeStamp < '" + eDate+ "'";
+    println(q);
+    remote.query(q);
     ArrayList<sqlData> data = new ArrayList<sqlData>();
     while (remote.next ())
     {

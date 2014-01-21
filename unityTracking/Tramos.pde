@@ -87,5 +87,11 @@ class Tramos {
      this.cars = cars;
     
   }
+  String initDate(){
+    return (new Timestamp(getInitTime())).toString();
+  }
+   String endDate(){
+    return (new Timestamp(getEndTime())).toString();
+  }
 }
 
