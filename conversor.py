@@ -90,19 +90,19 @@ class TkFileDialogExample(Tkinter.Frame):
     root.title("UTM batch conversor")
     self.pack(fill= Tkinter.BOTH, expand=1)
     b = Tkinter.Button(self, text='ASCII to UTM', command=self.ascii2raw)
-    b.place(x=20, y=20, width = 120, height = 40 )
+    b.place(x=20, y=60, width = 120, height = 40 )
 
     # b = Tkinter.Button(self, text='UTM to ASCII', command=self.utm2ascii)    
     # b.place(x=140, y=20, width = 120, height = 40 )
 
     b = Tkinter.Button(self, text='Geo to UTM', command=self.geo2utm)
-    b.place(x=260, y=20, width = 120, height = 40 )
+    b.place(x=20, y=20, width = 120, height = 40 )
 
 
 
     self.var = Tkinter.StringVar()
-    self.label = Tkinter.Label(self, text=0, textvariable=self.var)        
-    self.label.place(x=0, y=100-20, width = 600)
+    self.label = Tkinter.Label(self, text=0, textvariable=self.var, wraplength= 120)        
+    self.label.place(x=0, y=100, width = 120 )
    
   def ascii2raw(self):
     filename = tkFileDialog.askopenfilename()
@@ -158,7 +158,7 @@ class TkFileDialogExample(Tkinter.Frame):
 
 if __name__=='__main__':
   root = Tkinter.Tk()
-  root.geometry("600x100+0+0")
+  root.geometry("200x250+0+0")
   TkFileDialogExample(root).pack()
   root.mainloop()
 

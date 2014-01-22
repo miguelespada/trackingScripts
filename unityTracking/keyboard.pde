@@ -67,10 +67,6 @@ void keyPressed() {
       tramos.setEndTime();
     else if(key == 'q')
       rt.toggle();
-    else if(key == 'a')
-      rt.reset();
-    else if(key == 'm')
-      rt.offset(10);
     else if(key == 'M')
       rt.offset(60);
     else if(key == 'R'){

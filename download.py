@@ -69,9 +69,12 @@ def processVehicles(xml):
 con = _mysql.connect('127.0.0.1', 'root', 'wtw6sb', 'unity')
 while True:
 	#print "Downloading from: ", host
-	response = urllib2.urlopen(host)
-	html = response.read()
-	xml = parseGps(html)
-	vs = getVehicleIds(xml)
-	processVehicles(xml)
+	try:
+		response = urllib2.urlopen(host)
+		html = response.read()
+		xml = parseGps(html)
+		vs = getVehicleIds(xml)
+		processVehicles(xml)
+	except:
+		pass
 	time.sleep(2)
