@@ -35,7 +35,7 @@ class SQL {
    
    }
  int loadTramos() {
-   msql.query( "SELECT count(*) as n FROM tramos WHERE prueba = '" + rally + "'");
+   msql.query( "SELECT count(*) as n FROM tramos WHERE rally = '" + rally + "'");
    while (msql.next()){
      return msql.getInt("n");
    }
@@ -44,7 +44,7 @@ class SQL {
  Tramo loadTramo(int focus){
   
     
-    String q = "SELECT * FROM tramos WHERE prueba = '" + rally + "'";
+    String q = "SELECT * FROM tramos WHERE rally = '" + rally + "'";
     msql.query( q);
     int i = 0;
     while (msql.next ())
@@ -53,7 +53,7 @@ class SQL {
            i += 1;
            continue;
          }
-         String prueba = msql.getString("prueba");
+         String prueba = msql.getString("rally");
          int id = msql.getInt("id");
          println(prueba + " " + id);
          String fileName =  prueba + "/" + str(id) + "/" + str(id) + "_utm.txt";
@@ -152,7 +152,7 @@ class SQL {
     if (full)
       msql.query("INSERT INTO tracks VALUES (" + s  + ")");  
     else
-      msql.query("INSERT INTO tracks (CarId, TramoId, realIndex, avgSpeed, trackTime, trackDistance, remainingDistance) VALUES (" + s  + ")");
+      msql.query("INSERT INTO tracks (CarId, TramoId, rally, realIndex, avgSpeed, trackTime, trackDistance, remainingDistance) VALUES (" + s  + ")");
   }
   void insertResult(int carId, int tramoId, float time){
     String q = "DELETE FROM results WHERE tramoId = " + str(tramoId) + " and carId = " + str(carId);
