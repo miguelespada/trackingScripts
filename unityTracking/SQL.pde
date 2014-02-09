@@ -35,14 +35,17 @@ class SQL {
    
    }
  int loadTramos() {
-   msql.query( "SELECT count(*) as n FROM tramos ");
+   msql.query( "SELECT count(*) as n FROM tramos WHERE prueba = '" + rally + "'");
    while (msql.next()){
      return msql.getInt("n");
    }
    return 0;
  }
  Tramo loadTramo(int focus){
-    msql.query( "SELECT * FROM tramos");
+  
+    
+    String q = "SELECT * FROM tramos WHERE prueba = '" + rally + "'";
+    msql.query( q);
     int i = 0;
     while (msql.next ())
     {  
@@ -52,6 +55,7 @@ class SQL {
          }
          String prueba = msql.getString("prueba");
          int id = msql.getInt("id");
+         println(prueba + " " + id);
          String fileName =  prueba + "/" + str(id) + "/" + str(id) + "_utm.txt";
          int start =  msql.getInt("start");
          int end = -abs(msql.getInt("end"));

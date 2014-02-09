@@ -11,11 +11,12 @@ RealTime rt;
 String host = "";
 int trackThreshold;
 int M = 20;
-
+String rally;
 
 float lastActivity;
 float lastProcess;
 boolean bProcess = false;
+int totalTramos;
 
 void setup() {
 
@@ -49,6 +50,7 @@ void initServices() {
   dZ = loadSetting("dZ", 0.05);
   host = loadSetting("host", "");
   trackThreshold = loadSetting("trackThreshold", 30);
+  rally = loadSetting("rally", "");
   initializeKeys();
 }
 

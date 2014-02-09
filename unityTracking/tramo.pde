@@ -33,6 +33,8 @@ class Tramo {
   }
 
   void loadData(String fileName) {
+    String tramoName = host + "Tramos/"+ fileName;
+    println("Loading... " + tramoName);
     String lines[] = loadStrings(host + "Tramos/"+ fileName);
     float dst = 0;
     data = new ArrayList<TramoPoint>();

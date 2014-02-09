@@ -1,7 +1,6 @@
-#!/usr/local/bin/python
+#!/usr/local/bin/python2.7
 
 import os
-os.system("export PYTHONPATH=/usr/lib/pymodules/python2.6/")
 # -*- coding: utf-8 -*-
 import urllib2
 import xml.etree.ElementTree as ET
@@ -11,11 +10,32 @@ import pyproj
 
 
 wgs84=pyproj.Proj("+init=EPSG:4326")
-utm31=pyproj.Proj("+init=EPSG:32631")
-utm32=pyproj.Proj("+init=EPSG:32632")
 
+
+###############
+# A partir de aqui se hace la configuracion
+###############
+
+# Zona  32
+utmRef=pyproj.Proj("+init=EPSG:32632")
+
+# Zona 31
+# utmRef=pyproj.Proj("+init=EPSG:32631")
+
+# Datos de la base de datos remota IP, user, password, database
+con = _mysql.connect('127.0.0.1', 'root', 'wtw6sb', 'unity')
+
+# Ruta para el backup
 path = "backup/"
-#host = "http://147.96.81.188/gps1.xml"
+
+# Hacemos backup de archivo
+
+bBackup = True
+
+###############
+# Fin de la configuracion
+############### 
+
 host = "http://89.140.246.27/GwtGui/GetPositions?userName=voxel&pass=sit11&vehicle=001 002 003 004 005 006 007 008 009 010 011 012 021 022&typeFile=XML&index=1"
 host = host.replace(" ", "%20")
 #host = "http://89.140.246.27/GwtGui/GetPositions?userName=voxel&pass=sit11&vehicle=001%20002&typeFile=XML&index=1"
@@ -51,22 +71,24 @@ def processVehicles(xml):
 		print carId,
 		latitud =  float(r.find('latitude').text)
 		longitud =  float(r.find('longitude').text)
-		easting, northing = pyproj.transform(wgs84, utm31, longitud, latitud)
+		easting, northing = pyproj.transform(wgs84, utmRef, longitud, latitud)
 		state =  "'" + r.find('fleet').text + "'"
 		speed =  r.find('speed').text
 		carTime =  r.find('date').text
 		data = int(carId), float(easting), float(northing),  float(speed), int(carTime), state
 		if insertDB(data):
-			fileName = path + carId + "_" + str(int(time.time())) + ".xml"
-			f = open(fileName, 'w')
-			s = ET.tostring(r)
- 			f.write(s)
-			f.close()
-			print
-			print "[OK] new data backing up: ", carId
+			if bBackup:
+				fileName = path + carId + "_" + str(int(time.time())) + ".xml"
+				f = open(fileName, 'w')
+				s = ET.tostring(r)
+	 			f.write(s)
+				f.close()
+				print
+				print "[OK] new data backing up: ", carId
+			else:
+				print "[OK] new data", carId
 	print 
-	
-con = _mysql.connect('127.0.0.1', 'root', 'wtw6sb', 'unity')
+
 while True:
 	#print "Downloading from: ", host
 	try:

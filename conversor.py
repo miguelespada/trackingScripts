@@ -10,6 +10,7 @@ utm31=pyproj.Proj("+init=EPSG:32631")
 utm32=pyproj.Proj("+init=EPSG:32632")
 nad27 = pyproj.Proj("+init=EPSG:4267")
 
+utmRef=pyproj.Proj("+init=EPSG:32633")
 
 def convertGeo2utm(f, g):
     try:
@@ -22,9 +23,9 @@ def convertGeo2utm(f, g):
             # g.write(" " + str(float(tokens[2])) + " " + str(u[2]) + " " +str(u[3]) + "\n")
             x, y = float(tokens[0]), float(tokens[1])
             #x, y = pyproj.transform(wgs84, nad27, x, y)
-            a = pyproj.transform(wgs84, utm31, x, y)
+            a = pyproj.transform(wgs84, utmRef, x, y)
             g.write(str(a[1]) + " " +  str(a[0]))
-            g.write(" " + str(float(tokens[2])) + " 31 T\n")
+            g.write(" " + str(float(tokens[2])) + " 33 X\n")
         return 1
     except Exception as e:
         print e
@@ -80,7 +81,6 @@ def convertUtm2ascii(f, g):
         return 1
     except:
         return -1
-
 
 class TkFileDialogExample(Tkinter.Frame):
 
