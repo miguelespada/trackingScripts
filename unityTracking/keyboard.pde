@@ -75,6 +75,7 @@ void keyPressed() {
       cars.reset();
       mysql.remove();
       rt.running = false;
+      bProcess = false;
     }
      if(key == 'C'){
         dX = 0;
