@@ -1,4 +1,4 @@
-remoteDBhost localhost
+remoteDBhost 107.170.170.31
 host /Applications/MAMP/htdocs/unity/
 localDBpass miguel
 remoteDBname rally
