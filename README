@@ -1,3 +1,7 @@
 sudo apt-get install python-mysqldb
 sudo apt-get install python-pyproj
 
+$mysql 
+create database rally
+use rally
+source unity.sql
