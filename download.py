@@ -33,11 +33,15 @@ for line in f:
 
 # Zona de referencia
 utmRef=pyproj.Proj("+init=EPSG:326" + ref)
+print "UTM de referencia", ref
+
 # Datos de la base de datos remote HOST, user, password, database
 con = _mysql.connect(remoteDBhost, remoteDBuser, remoteDBpass, remoteDBname)
+print "DATABASE", (remoteDBhost, remoteDBuser, remoteDBpass, remoteDBname)
 
 # Ruta para el backup
 path = backupPath
+print "backup", backupPath
 
 # Hacemos backup de archivo
 
