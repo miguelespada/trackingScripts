@@ -37,7 +37,7 @@ print "UTM de referencia", ref
 
 # Datos de la base de datos remote HOST, user, password, database
 con = _mysql.connect(remoteDBhost, remoteDBuser, remoteDBpass, remoteDBname)
-print "DATABASE", (remoteDBhost, remoteDBuser, remoteDBpass, remoteDBname)
+print "DATABASE", (remoteDBhost, remoteDBuser, '***', remoteDBname)
 
 # Ruta para el backup
 path = backupPath
