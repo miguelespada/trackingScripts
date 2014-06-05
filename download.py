@@ -101,13 +101,13 @@ def processVehicles(xml):
 	print 
 
 while True:
-	#print "Downloading from: ", host
+	print "Downloading from: ", host
 	try:
 		response = urllib2.urlopen(host)
 		html = response.read()
 		xml = parseGps(html)
 		vs = getVehicleIds(xml)
 		processVehicles(xml)
-	except:
-		pass
+	except MyError as e:
+		print 'My exception occurred, value:', e.value
 	time.sleep(2)
