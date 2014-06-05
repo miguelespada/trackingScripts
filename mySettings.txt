@@ -2,8 +2,8 @@ refUtmZone 32
 backupPath backup/
 remoteDBhost 107.170.170.31
 remoteDBname rally
-remoteDBpass root
-remoteDBuser root
+remoteDBpass gl47w7xm
+remoteDBuser miguel
 host /Applications/MAMP/htdocs/unity/
 localDBpass miguel
 dZ 0.06428573
