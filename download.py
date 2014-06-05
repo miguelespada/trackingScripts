@@ -108,6 +108,6 @@ while True:
 		xml = parseGps(html)
 		vs = getVehicleIds(xml)
 		processVehicles(xml)
-	except MyError as e:
+	except Exception as e:
 		print 'My exception occurred, value:', e.value
 	time.sleep(2)
