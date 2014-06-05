@@ -1,7 +1,5 @@
-#!/usr/local/bin/python2.7
-
-import os
 # -*- coding: utf-8 -*-
+import os
 import urllib2
 import xml.etree.ElementTree as ET
 import _mysql
