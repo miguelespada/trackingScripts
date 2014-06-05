@@ -1,7 +1,13 @@
+
 sudo apt-get install python-mysqldb
 sudo apt-get install python-pyproj
 
-$mysql 
-create database rally
-use rally
-source unity.sql
+--- 
+MYSQL 
+mysql> create database rally
+mysql> use rally
+mysql> source unity.sql
+
+---
+To find UTM ref zone
+http://home.hiwaay.net/~taylorc/toolbox/geography/geoutm.html

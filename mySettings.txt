@@ -13,5 +13,5 @@ rally cerdenya
 trackThreshold 50
 focus 1
 localDBuser miguel
-refUtmZone 33
+refUtmZone 32
 backupPath backup/
