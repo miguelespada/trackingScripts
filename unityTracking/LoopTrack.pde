@@ -75,7 +75,7 @@ class LoopTrack {
     String s = "";
     s += car.id;
     s += "," + str(tramo.id);
-    s += "," + rally;
+    s += "," +  "'" +  rally +  "'";
     s += "," + last.toString();
     s += "," + int(avg * 10) / 10.0;
     s += "," + int(getTotalTime());
@@ -116,7 +116,7 @@ class LoopTrack {
            started = true;
         }
         
-        String s = car.id + "," + str(tramo.id) + "," + rally; 
+        String s = car.id + "," + str(tramo.id) + "," +  "'" +  rally +  "'"; 
         s += "," + i;
         s += "," + (int(avg * 10)/10.0);
         s += "," + (int(time * 10) /10.0);

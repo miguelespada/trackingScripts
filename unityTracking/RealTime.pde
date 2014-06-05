@@ -22,6 +22,7 @@ class RealTime{
      
      if(running) {
        cars.reset();
+       mysql.markAsProcessed();
        mysql.removeTracks();
        prev = null;
      }

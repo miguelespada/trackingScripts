@@ -16,17 +16,30 @@ wgs84=pyproj.Proj("+init=EPSG:4326")
 # A partir de aqui se hace la configuracion
 ###############
 
-# Zona  32
-utmRef=pyproj.Proj("+init=EPSG:32632")
+f = open("mySettings.txt", 'r')
+for line in f:
+	tokens = line.split(" ")
+	tokens[1] = tokens[1].replace("\n", "")
+	if tokens[0] == "refUtmZone":
+		ref = tokens[1]
+	if tokens[0] == "remoteDBhost":
+		remoteDBhost = tokens[1]
+	if tokens[0] == "remoteDBname":
+		remoteDBname = tokens[1]
+	if tokens[0] == "remoteDBpass":
+		remoteDBpass = tokens[1]
+	if tokens[0] == "remoteDBuser":
+		remoteDBuser = tokens[1]
+	if tokens[0] == "backupPath":
+		backupPath = tokens[1]
 
-# Zona 31
-# utmRef=pyproj.Proj("+init=EPSG:32631")
-
-# Datos de la base de datos remota IP, user, password, database
-con = _mysql.connect('127.0.0.1', 'root', 'wtw6sb', 'unity')
+# Zona de referencia
+utmRef=pyproj.Proj("+init=EPSG:326" + ref)
+# Datos de la base de datos remote HOST, user, password, database
+con = _mysql.connect(remoteDBhost, remoteDBuser, remoteDBpass, remoteDBname)
 
 # Ruta para el backup
-path = "backup/"
+path = backupPath
 
 # Hacemos backup de archivo
 

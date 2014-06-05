@@ -1,4 +1,4 @@
-String settingsFile = "mySettings.txt";
+String settingsFile = "../mySettings.txt";
 HashMap settings = new HashMap();
 
 String loadSetting(String id, String defaultValue) {

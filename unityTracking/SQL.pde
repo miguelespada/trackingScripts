@@ -82,13 +82,21 @@ class SQL {
     String iDate =  tramos.initDate();
     String eDate =  tramos.endDate();
     
-    msql.query("DELETE FROM tracks WHERE tramoId = " + str(tramos.tramo.id) + " and rally = " + rally);
+    msql.query("DELETE FROM tracks WHERE tramoId = " + str(tramos.tramo.id) + " and rally = '" + rally + "'");
     String q = "UPDATE data SET processed = 0 WHERE timeStamp > '" + iDate+ "' " + " and  timeStamp < '" + eDate+ "'" ;
     println(q);
     remote.query(q);
   }
+   void markAsProcessed() {
+   
+    String iDate =  tramos.initDate();
+    String eDate =  tramos.endDate();
+    String q = "UPDATE data SET processed = 1 WHERE timeStamp > '" + iDate+ "' " + " and  timeStamp < '" + eDate+ "'" ;
+    println(q);
+    remote.query(q);
+  }
   void removeTracks(){
-    String q = "DELETE FROM tracks WHERE tramoId = " + str(tramos.tramo.id) + " and rally = " + rally;
+    String q = "DELETE FROM tracks WHERE tramoId = " + str(tramos.tramo.id) + " and rally = '" + rally + "'";
      msql.query(q);
      println(q);
 
@@ -154,9 +162,9 @@ class SQL {
       msql.query("INSERT INTO tracks (CarId, TramoId, rally, realIndex, avgSpeed, trackTime, trackDistance, remainingDistance) VALUES (" + s  + ")");
   }
   void insertResult(int carId, int tramoId, float time){
-    String q = "DELETE FROM results WHERE tramoId = " + str(tramoId) + " and carId = " + str(carId) + " and rally = " + rally;
+    String q = "DELETE FROM results WHERE tramoId = " + str(tramoId) + " and carId = " + str(carId) + " and rally = " +  "'" +  rally +  "'";
     msql.query(q);
-    String s = str(carId) + "," + str(tramoId) + "," + rally + "," + str(time) + ",'" + int(time)/60 + ":" + int(time)%60 + "'"; 
+    String s = str(carId) + "," + str(tramoId) + ",'" + rally + "'," + str(time) + ",'" + int(time)/60 + ":" + int(time)%60 + "'"; 
     q = "INSERT INTO results (CarId, TramoId, rally, time, timeString) VALUES (" + s + ")";
     msql.query(q);
 

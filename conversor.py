@@ -1,16 +1,20 @@
 #!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
-import utm
 
 import Tkinter, Tkconstants, tkFileDialog
  
 import pyproj
 wgs84=pyproj.Proj("+init=EPSG:4326")
-utm31=pyproj.Proj("+init=EPSG:32631")
-utm32=pyproj.Proj("+init=EPSG:32632")
-nad27 = pyproj.Proj("+init=EPSG:4267")
 
-utmRef=pyproj.Proj("+init=EPSG:32633")
+f = open("mySettings.txt", 'r')
+for line in f:
+  tokens = line.split(" ")
+  tokens[1] = tokens[1].replace("\n", "")
+  if tokens[0] == "refUtmZone":
+    ref = tokens[1]
+
+utmRef=pyproj.Proj("+init=EPSG:326" + ref)
+
 
 def convertGeo2utm(f, g):
     try:
@@ -18,14 +22,10 @@ def convertGeo2utm(f, g):
         lines = lines.split(' ')
         for l in lines:
             tokens = l.split(',')
-            # u = utm.from_latlon(float(tokens[1]), float(tokens[0]))
-            # g.write(str(u[1]) + " " +  str(u[0]))
-            # g.write(" " + str(float(tokens[2])) + " " + str(u[2]) + " " +str(u[3]) + "\n")
             x, y = float(tokens[0]), float(tokens[1])
-            #x, y = pyproj.transform(wgs84, nad27, x, y)
             a = pyproj.transform(wgs84, utmRef, x, y)
             g.write(str(a[1]) + " " +  str(a[0]))
-            g.write(" " + str(float(tokens[2])) + " 33 X\n")
+            g.write(" " + str(float(tokens[2])) + " " + ref + " X\n")
         return 1
     except Exception as e:
         print e
