@@ -1,0 +1,17 @@
+remoteDBhost 147.96.81.188
+host /Applications/MAMP/htdocs/unity/
+localDBpass miguel
+remoteDBname unity
+remoteDBpass wtw6sb
+dZ 0.06428573
+dY 964.4439
+dX 3982.2212
+localDBhost localhost:8889
+remoteDBuser root
+localDBname unity
+rally suecia
+trackThreshold 50
+focus 1
+localDBuser miguel
+refUtmZone 32
+backupPath backup/

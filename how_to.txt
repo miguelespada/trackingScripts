@@ -1,0 +1,27 @@
+Rellenar mySettings.txt
+
+
+1) Buscar la zona de referencia del rally. 
+
+http://home.hiwaay.net/~taylorc/toolbox/geography/geoutm.html
+
+La zona de referencia es la zona UTM del primer punto.
+
+ej: refUtmZone 32
+
+2) Poner el nombre del rally
+
+ej: rally suecia
+
+3) En MAMP, hacer el directorio con el nombre del rally:
+
+ej: MAMP/htdocs/unity/Tramos/suecia
+
+4) Crear las carpetas de los tramos con los datos en utm
+
+MAMP/htdocs/unity/Tramos/suecia/20_ascci.txt
+MAMP/htdocs/unity/Tramos/suecia/20_utm.txt
+MAMP/htdocs/unity/Tramos/suecia/20.txt
+
+
+

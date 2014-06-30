@@ -1,0 +1,17 @@
+remoteDBhost qrg887.dbname.net
+host /Applications/MAMP/htdocs/unity/
+localDBpass miguel
+remoteDBname qrg887
+remoteDBpass gnmpgfV1
+dZ 0.06428573
+dY -3760.2017
+dX 285.6565
+localDBhost localhost:8889
+remoteDBuser qrg887
+localDBname unity
+trackThreshold 50
+focus 14
+localDBuser miguel
+refUtmZone 32
+backupPath backup/
+rally suecia

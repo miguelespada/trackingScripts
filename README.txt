@@ -1,4 +1,4 @@
-For download.py and conversor.py
+Dependencias
 
 — 
 sudo apt-get install python-mysqldb
