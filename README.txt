@@ -1,4 +1,6 @@
+For download.py and conversor.py
 
+— 
 sudo apt-get install python-mysqldb
 sudo apt-get install python-pyproj
 
