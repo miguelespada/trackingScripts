@@ -173,5 +173,10 @@ ej. 20_ascii_real.txt
 13) Run conversor.py ASCII to UTM to get real
 ej 20_real.txt (este fichero alimenta Unity)
 14) Export terrain to 3DS
-ej. 20.3DS (este es el fichero de entrada de Unity)
-15) Save C4D (just for backuo())
+ej. t20.3DS (este es el fichero de entrada de Unity)
+15) Save C4D (just for backup())
+16) Al importar en Unity:
+--- Import terrain t20.3ds
+--- Set scale 1 (NO 0.1)
+--- Import texture
+--- A veces es necesario reajustar la altura. (Darle al play, ajustar la altura; memorizar la altura, ajustarla en modo edición.)
