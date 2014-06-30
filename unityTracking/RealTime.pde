@@ -32,6 +32,10 @@ class RealTime{
      offset += (i * 1000);
    }
    
+   void maxOffset(){
+     offset = tramos.getTotalTime();
+   }
+   
    void setEnd(){
      offset = tramos.getTotalTime();
    }

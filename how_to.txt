@@ -13,7 +13,7 @@ ej: refUtmZone 32
 
 ej: rally suecia
 
-3) En MAMP, hacer el directorio con el nombre del rally:
+3) En XAMP, hacer el directorio con el nombre del rally:
 
 ej: MAMP/htdocs/unity/Tramos/suecia
 
@@ -23,5 +23,155 @@ MAMP/htdocs/unity/Tramos/suecia/20_ascci.txt
 MAMP/htdocs/unity/Tramos/suecia/20_utm.txt
 MAMP/htdocs/unity/Tramos/suecia/20.txt
 
+20.txt es el orginal
+20_ascci.txt se utiliza para proyectar las alturas en CINEMA4D
+20_utm.txt es el utm sin alturas se utiliza para el cálculo de trayectores en Processing
+
+20_ascci.txt y 20_utm.txt se generan con el conversor
+
+5) Dar de alta los tramos en la base de datos LOCAL XAMP (con phpMyAdmin)
+
+* Tabla tramos
+-- rally: el nombre del rally 
+-- ID: el número de tramo
+-- START/END el track point de principio y final del tramo (aproximado). Se modifica desde processing. Tiene que ser conservador.
+-- initTime/endTime. Hora de comienzo y final del tramo aproximada. Se puede modificar al finalizar. Cuanto más precisa, ahorramos computación.
+
+6) Dentro de la base de datos LOCAL.
+-- Se pueden modificar tramos y cars
+-- En cars se puede resaltar un coche con un color para verlo mejor en el backed
+-- NO se puede modificar tracks y results (los genera el backend/Processing)
 
 
+
+-----------
+-- HACIA BACKEND//PROCESSING
+-----------
+
+7) Processing necesita:
+-- Acceso a la base de datos REMOTA
+-- Acceso a la base de datos LOCAL
+
+8) Processing genera:
+-- Los tracks calculados a partir de los datos en crudo
+
+Al conectar el log debe decir algo así:
+
+$ Using driver com.mysql.jdbc.Driver 3.1
+$ Connected to local DB
+$ Using driver com.mysql.jdbc.Driver 3.1
+$ Connected to remote DB
+$ Loading... /Applications/MAMP/htdocs/unity/Tramos/suecia/24/24_utm.txt
+$ suecia/24/24_utm.txt loaded
+
+
+9) 
+-- [1] UP/DOWN se cambia de tramo
+-- [SHIT] drag X, se mueve el tramo
+-- [ALT] drag Y, se hace zoom
+-- [SHIFT] C, se centra en el tramo
+
+****
+-- [i/e] UP/DOWN se modifica el punto de entrada/salida en el tramo
+-- [t] UP/DOWN se modifica el valor de "fuera de tramo" [mejor no tocar]
+-- [I/E] SHIFT, se setea el tiempo de comienzo y fin de tramo. Mejor no tocar y hacerlo desde la base de datos.
+
+****
+-- [R] + SHIFT resetea los tracks
+-- [q] comienza el diferido
+-- [a] resetea el diferido al comienzo del tramo
+-- [M] + SHIFT avanza 1 minuto en el diferido
+-- [O] + SHIFT avanza al final en el diferido
+-- [ ] procesar on/off
+
+*******
+PARA PROCESAR TODO UN TRAMO COMPLETO EN DIFERIDO
+0 - Seleccionar el tramo
+1 - [R + SHIFT] Reset
+2 - [O + SHIFT] Set time at the end
+3 - [ ] Run
+
+4 - Se pueden reajustar los valores de START Y END para ajustar los tiempos
+*******
+
+*******
+PARA PROCESAR EN DIRECTO
+1 - [ ] Run
+
+2 - Se pueden ajustar los valores de START Y END para que se acerquen más a la realidad. Después de modificarlos es preciso recalcular los tiempos con  [R + Shift]
+*******
+
+-----------
+-- HACIA UNITY
+-----------
+
+7) Con Cinema4D crear los terrenos con proyecciones.
+-- Cinema4D necesita el 3DS.
+ej: 20.3DS
+-- Genera ASCCI con alturas.
+ej: 20_real_ascci.txt
+-- Utilzar Conversor.py para generar el UTM con alturas (para unity)
+ej: 20_real.txt
+
+
+8) Unity necesita.
+-- El terreno
+ej: 20.3DS
+-- El UTM con alturas
+ej: 20_real.txt
+-- Acesso a la base de datos local
+
+9) Configurar:
+Teorico > Load Track > host name con el acceso local de XAMP:
+ej: http://127.0.0.1:8888/unity/
+No hace falta modificar el tramo lo hace automáticamente.
+
+10) PLAY:
+
+En log tiene que salir que ha cargado el tramo:
+$ Loading...http://127.0.0.1:8888/unity/Tramos/suecia/24/24_real.txt
+$ ...
+$ 1057 vertices loaded
+
+Se puede activar y desactivar el Line renderer (en teorico), para ver por donde va y comprobar que se ajusta al terreno.
+
+11) SHORTCUTS
+
+[1]: camara top
+[2]: camara top of focus car 3: camara follow focus car 4: camara orbit focus car 5: prev fixed camara
+[6]: next fixed camara
+[q/a]: zoom in/out
+[e/d]: modifica el tamaño cartelas
+[s]: sincronizar estado actual de los coches
+[l]: loop de todo los coches
+[L] + SHIFT: loop relativo al focus car
+[m/n]: avanzar/retroceder 30s en el loop
+[i/k]: cambia el focus car al previo/siguiente en la clasificación.
+[c] + Arrows: mover la clasificación de un sitio a otro.
+
+
+
+#######
+### CINEMA 4D
+#######
+
+1) Import 3DS
+2) Set texture
+3) Set texture resolution
+4) Set spline in TOP view
+5) Set ascci at 0, 0, 0,
+6) Import ascci
+7) Remove spline point
+8) Set spline (Linear, NO close, None intermediate points)
+9) Move terrain until match 
+--- Match init point
+--- Set anchor at init point
+10) DO NOT MOVE SPLINE
+11) Project spline (Top view)
+12) Export assci_real
+ej. 20_ascii_real.txt
+13) Run conversor.py ASCII to UTM to get real
+ej 20_real.txt (este fichero alimenta Unity)
+14) Export terrain to 3DS
+ej. 20.3DS (este es el fichero de entrada de Unity)
+15) Save C4D (just for backuo())

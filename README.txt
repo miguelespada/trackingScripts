@@ -11,5 +11,10 @@ mysql> use rally
 mysql> source unity.sql
 
 ---
+Allow remote connections
+
+mysql>GRANT ALL ON *.* to user@'%' IDENTIFIED BY 'password'; 
+
+---
 To find UTM ref zone
 http://home.hiwaay.net/~taylorc/toolbox/geography/geoutm.html

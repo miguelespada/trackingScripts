@@ -71,6 +71,8 @@ void keyPressed() {
       rt.reset();
     else if(key == 'M')
       rt.offset(60);
+    else if(key == 'O')
+      rt.maxOffset();
     else if(key == 'R'){
       cars.reset();
       mysql.remove();
